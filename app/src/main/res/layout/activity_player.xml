@@ -78,6 +78,15 @@
                 android:maxLines="1" />
 
             <ImageButton
+                android:id="@+id/btnPip"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Picture in picture"
+                android:src="@drawable/ic_pp_pip"
+                android:tint="@color/white" />
+
+            <ImageButton
                 android:id="@+id/btnRotate"
                 android:layout_width="48dp"
                 android:layout_height="48dp"

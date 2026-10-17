@@ -2,16 +2,26 @@ package com.plusplay.app
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.Icon
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Rational
+import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -21,10 +31,13 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.VideoView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
 import java.io.BufferedReader
 import java.io.File
@@ -52,6 +65,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var btnBack: ImageButton
     private lateinit var btnSettings: ImageButton
     private lateinit var btnLock: ImageButton
+    private lateinit var btnPip: ImageButton
     private lateinit var lockedIndicator: ImageButton
     private lateinit var settingsDropdown: LinearLayout
     private lateinit var settingCurrentDirSubtitle: TextView
@@ -65,7 +79,13 @@ class PlayerActivity : AppCompatActivity() {
     private var subtitles: List<SubtitleEntry> = emptyList()
     private var currentSubtitlePath: String? = null
     private var isUserExiting = false // Track if user is intentionally exiting
-    
+
+    // Picture-in-picture state
+    private var videoAspect = Rational(16, 9)
+    private var pipActive = false // True from entering PiP until the activity is resumed or stopped
+    private var suppressAutoPip = false // Set while we launch another screen (e.g. subtitle picker)
+    private var pipReceiver: BroadcastReceiver? = null
+
     // Variables for accumulated seeking with scroll tracking
     private var accumulatedSeekTime = 0 // in milliseconds
     private var lastSwipeDirection = 0 // 1 for forward, -1 for backward, 0 for none
@@ -108,6 +128,15 @@ class PlayerActivity : AppCompatActivity() {
         private const val STATE_VIDEO_POSITION = "state_video_position"
         private const val STATE_WAS_PLAYING = "state_was_playing"
         private const val MAX_RECENT_VIDEOS = 3
+
+        // Picture-in-picture remote actions
+        private const val ACTION_PIP_CONTROL = "com.plusplay.app.PIP_CONTROL"
+        private const val EXTRA_PIP_CONTROL = "pip_control"
+        private const val PIP_REWIND = 1
+        private const val PIP_PLAY_PAUSE = 2
+        private const val PIP_FORWARD = 3
+        // Android only accepts PiP aspect ratios between 1:2.39 and 2.39:1
+        private const val PIP_MAX_RATIO = 2.38f
     }
     
     data class SubtitleEntry(
@@ -169,6 +198,7 @@ class PlayerActivity : AppCompatActivity() {
         btnBack = findViewById(R.id.btnBack)
         btnSettings = findViewById(R.id.btnSettings)
         btnLock = findViewById(R.id.btnLock)
+        btnPip = findViewById(R.id.btnPip)
         lockedIndicator = findViewById(R.id.lockedIndicator)
         settingsDropdown = findViewById(R.id.settingsDropdown)
         settingCurrentDirSubtitle = findViewById(R.id.settingCurrentDirSubtitle)
@@ -221,7 +251,11 @@ class PlayerActivity : AppCompatActivity() {
         
         // Lock button
         btnLock.setOnClickListener { toggleLock() }
-        
+
+        // Picture-in-picture button (hidden on devices that can't do PiP)
+        btnPip.visibility = if (supportsPip()) View.VISIBLE else View.GONE
+        btnPip.setOnClickListener { enterPip() }
+
         // Locked indicator (to unlock)
         lockedIndicator.setOnClickListener { toggleLock() }
         
@@ -270,6 +304,8 @@ class PlayerActivity : AppCompatActivity() {
             type = "*/*"
             putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/x-subrip", "text/plain", "*/*"))
         }
+        // Launching the picker triggers onUserLeaveHint; don't treat that as "go to PiP"
+        suppressAutoPip = true
         startActivityForResult(intent, REQUEST_SUBTITLE_FILE)
     }
     
@@ -556,7 +592,13 @@ class PlayerActivity : AppCompatActivity() {
             val duration = videoView.duration
             seekBar.max = duration
             totalTimeText.text = formatTime(duration)
-            
+
+            // Remember the video's shape so the PiP window matches it
+            if (mediaPlayer.videoWidth > 0 && mediaPlayer.videoHeight > 0) {
+                videoAspect = clampAspect(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
+            }
+            updatePipParams()
+
             // Check for saved position and show resume dialog if needed
             val savedPosition = getSavedPosition()
             if (savedPosition > 0 && savedPosition < duration - 5000) { // At least 5 seconds before end
@@ -644,6 +686,8 @@ class PlayerActivity : AppCompatActivity() {
         val iconRes = if (!isPlaying) R.drawable.ic_pp_play else R.drawable.ic_pp_pause
         btnPlayPause.setImageResource(iconRes)
         btnCenterPlayPause.setImageResource(iconRes)
+        // Keep the PiP play/pause action and auto-enter flag in sync
+        updatePipParams()
     }
 
     private fun seekRelative(milliseconds: Int, showFeedback: Boolean = false) {
@@ -734,6 +778,8 @@ class PlayerActivity : AppCompatActivity() {
     }
     
     private fun showControls() {
+        // The PiP window is too small for the overlay; it has its own system controls
+        if (isInPip()) return
         controlsOverlay.visibility = View.VISIBLE
         scheduleHideControls()
     }
@@ -824,19 +870,209 @@ class PlayerActivity : AppCompatActivity() {
             saveWasPlaying(isPlaying)
         }
         
-        if (isPlaying) {
+        // In picture-in-picture the activity is paused but still on screen: keep playing
+        val inPip = pipActive || isInPip()
+        if (isPlaying && !inPip) {
             videoView.pause()
         }
-        handler.removeCallbacks(updateSeekBarRunnable)
+        if (!inPip) {
+            handler.removeCallbacks(updateSeekBarRunnable)
+        }
         handler.removeCallbacks(hideControlsRunnable)
     }
 
     override fun onResume() {
         super.onResume()
+        suppressAutoPip = false
+        if (!isInPip()) {
+            pipActive = false
+        }
         if (isPlaying) {
             videoView.start()
         }
+        // Remove first so a loop kept alive during PiP isn't doubled up
+        handler.removeCallbacks(updateSeekBarRunnable)
         handler.post(updateSeekBarRunnable)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (pipActive) {
+            // Stopped while in PiP: either the PiP window was closed or the screen turned off
+            pipActive = false
+            videoView.pause()
+            isPlaying = false
+            updatePlayPauseButton()
+            if (!isInPip()) {
+                // PiP window was dismissed, treat it like the user closing the player
+                isUserExiting = true
+                finish()
+            }
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        // Android 12+ enters PiP by itself via setAutoEnterEnabled; Android 8-11 need this
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S &&
+            !suppressAutoPip &&
+            videoView.isPlaying
+        ) {
+            enterPip()
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (isInPictureInPictureMode) {
+            pipActive = true
+            hideControls()
+            lockedIndicator.visibility = View.GONE
+            seekFeedback.visibility = View.GONE
+            applyPipSubtitleStyle(true)
+            registerPipReceiver()
+            // onPause may have paused playback while the system moved us into PiP
+            if (isPlaying && !videoView.isPlaying) {
+                videoView.start()
+            }
+        } else {
+            unregisterPipReceiver()
+            applyPipSubtitleStyle(false)
+            if (isLocked) {
+                lockedIndicator.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    // ---- Picture-in-picture helpers ----
+
+    private fun supportsPip(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+    }
+
+    private fun isInPip(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isInPictureInPictureMode
+    }
+
+    private fun enterPip() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (!supportsPip() || isInPip()) return
+        hideControls()
+        try {
+            pipActive = enterPictureInPictureMode(buildPipParams())
+        } catch (e: IllegalStateException) {
+            pipActive = false
+        } catch (e: IllegalArgumentException) {
+            pipActive = false
+        }
+    }
+
+    private fun clampAspect(width: Int, height: Int): Rational {
+        val ratio = width.toFloat() / height.toFloat()
+        return when {
+            ratio > PIP_MAX_RATIO -> Rational(238, 100)
+            ratio < 1f / PIP_MAX_RATIO -> Rational(100, 238)
+            else -> Rational(width, height)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun buildPipParams(): PictureInPictureParams {
+        val builder = PictureInPictureParams.Builder()
+            .setAspectRatio(videoAspect)
+            .setActions(buildPipActions())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Only slide into PiP on Home gesture while something is actually playing
+            builder.setAutoEnterEnabled(videoView.isPlaying)
+        }
+        return builder.build()
+    }
+
+    private fun updatePipParams() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (!supportsPip()) return
+        try {
+            setPictureInPictureParams(buildPipParams())
+        } catch (e: IllegalStateException) {
+            // Activity not in a state that accepts PiP params; safe to ignore
+        } catch (e: IllegalArgumentException) {
+            // Invalid aspect ratio; keep the previous params
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun buildPipActions(): List<RemoteAction> {
+        val playing = videoView.isPlaying
+        return listOf(
+            pipAction(R.drawable.ic_pp_rewind, "Rewind 10s", PIP_REWIND),
+            pipAction(
+                if (playing) R.drawable.ic_pp_pause else R.drawable.ic_pp_play,
+                if (playing) "Pause" else "Play",
+                PIP_PLAY_PAUSE
+            ),
+            pipAction(R.drawable.ic_pp_fast_forward, "Forward 10s", PIP_FORWARD)
+        )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun pipAction(iconRes: Int, title: String, control: Int): RemoteAction {
+        val intent = Intent(ACTION_PIP_CONTROL)
+            .setPackage(packageName)
+            .putExtra(EXTRA_PIP_CONTROL, control)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            control,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        return RemoteAction(Icon.createWithResource(this, iconRes), title, title, pendingIntent)
+    }
+
+    private fun registerPipReceiver() {
+        if (pipReceiver != null) return
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val received = intent ?: return
+                if (received.action != ACTION_PIP_CONTROL) return
+                when (received.getIntExtra(EXTRA_PIP_CONTROL, -1)) {
+                    PIP_REWIND -> seekRelative(-10000)
+                    PIP_FORWARD -> seekRelative(10000)
+                    PIP_PLAY_PAUSE -> togglePlayPause()
+                }
+            }
+        }
+        ContextCompat.registerReceiver(
+            this,
+            receiver,
+            IntentFilter(ACTION_PIP_CONTROL),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        pipReceiver = receiver
+    }
+
+    private fun unregisterPipReceiver() {
+        pipReceiver?.let {
+            try {
+                unregisterReceiver(it)
+            } catch (e: IllegalArgumentException) {
+                // Already unregistered
+            }
+        }
+        pipReceiver = null
+    }
+
+    // Subtitles are sized for a full screen; shrink them so they fit a PiP window
+    private fun applyPipSubtitleStyle(inPip: Boolean) {
+        subtitleText.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (inPip) 10f else 16f)
+        val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
+        val marginDp = if (inPip) 4 else 80
+        params.bottomMargin = (marginDp * resources.displayMetrics.density).toInt()
+        subtitleText.layoutParams = params
     }
 
     override fun onBackPressed() {
@@ -875,6 +1111,7 @@ class PlayerActivity : AppCompatActivity() {
         if (isUserExiting || isFinishing) {
             clearSavedPosition()
         }
+        unregisterPipReceiver()
         videoView.stopPlayback()
         handler.removeCallbacks(updateSeekBarRunnable)
         handler.removeCallbacks(hideControlsRunnable)
