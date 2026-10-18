@@ -20,6 +20,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Rational
 import android.util.TypedValue
 import android.view.GestureDetector
@@ -34,19 +35,22 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.TextView
-import android.widget.VideoView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.util.Locale
 import kotlin.math.abs
 
 class PlayerActivity : AppCompatActivity() {
 
-    private lateinit var videoView: VideoView
+    private lateinit var videoView: ScalableVideoView
     private lateinit var gestureDetector: GestureDetectorCompat
     private lateinit var controlsOverlay: View
     private lateinit var seekBar: SeekBar
@@ -66,10 +70,16 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var btnSettings: ImageButton
     private lateinit var btnLock: ImageButton
     private lateinit var btnPip: ImageButton
+    private lateinit var btnAspect: ImageButton
     private lateinit var lockedIndicator: ImageButton
     private lateinit var settingsDropdown: LinearLayout
     private lateinit var settingCurrentDirSubtitle: TextView
     private lateinit var settingExternalSubtitle: TextView
+    private lateinit var subDelayLabel: TextView
+    private lateinit var subDelayMinusBig: TextView
+    private lateinit var subDelayMinus: TextView
+    private lateinit var subDelayPlus: TextView
+    private lateinit var subDelayPlusBig: TextView
     
     private var isPlaying = true
     private var videoPath: String? = null
@@ -78,7 +88,12 @@ class PlayerActivity : AppCompatActivity() {
     private var isLocked = false
     private var subtitles: List<SubtitleEntry> = emptyList()
     private var currentSubtitlePath: String? = null
-    private var isUserExiting = false // Track if user is intentionally exiting
+    // Subtitle delay in ms; positive = subtitles appear later
+    private var subtitleOffsetMs = 0L
+    private var aspectMode = ScalableVideoView.Mode.FIT
+    // Last position seen while playing; the player may already be released in onStop
+    private var lastKnownPosition = 0
+    private var lastPeriodicSave = 0L
 
     // Picture-in-picture state
     private var videoAspect = Rational(16, 9)
@@ -104,7 +119,9 @@ class PlayerActivity : AppCompatActivity() {
         override fun run() {
             updateSeekBar()
             updateSubtitle()
-            handler.postDelayed(this, 500)
+            savePositionPeriodically()
+            // Tick faster while subtitles are showing so they stay in step
+            handler.postDelayed(this, if (subtitles.isEmpty()) 500 else 250)
         }
     }
     
@@ -127,7 +144,15 @@ class PlayerActivity : AppCompatActivity() {
         private const val STATE_VIDEO_PATH = "state_video_path"
         private const val STATE_VIDEO_POSITION = "state_video_position"
         private const val STATE_WAS_PLAYING = "state_was_playing"
-        private const val MAX_RECENT_VIDEOS = 3
+        private const val MAX_RECENT_VIDEOS = 30
+        private const val KEY_ASPECT_MODE = "aspect_mode"
+        private const val KEY_SUB_OFFSET = "sub_offset_"
+        // Positions closer than this to the start or the end are not worth resuming
+        private const val MIN_RESUME_POSITION = 5000
+        private const val END_MARGIN_MS = 5000
+        private const val PERIODIC_SAVE_INTERVAL = 10000L
+        private const val SUB_STEP_SMALL = 500L
+        private const val SUB_STEP_BIG = 5000L
 
         // Picture-in-picture remote actions
         private const val ACTION_PIP_CONTROL = "com.plusplay.app.PIP_CONTROL"
@@ -160,6 +185,7 @@ class PlayerActivity : AppCompatActivity() {
         supportActionBar?.hide()
         
         setContentView(R.layout.activity_player)
+        enterImmersiveMode()
 
         initializeViews()
         
@@ -199,10 +225,16 @@ class PlayerActivity : AppCompatActivity() {
         btnSettings = findViewById(R.id.btnSettings)
         btnLock = findViewById(R.id.btnLock)
         btnPip = findViewById(R.id.btnPip)
+        btnAspect = findViewById(R.id.btnAspect)
         lockedIndicator = findViewById(R.id.lockedIndicator)
         settingsDropdown = findViewById(R.id.settingsDropdown)
         settingCurrentDirSubtitle = findViewById(R.id.settingCurrentDirSubtitle)
         settingExternalSubtitle = findViewById(R.id.settingExternalSubtitle)
+        subDelayLabel = findViewById(R.id.subDelayLabel)
+        subDelayMinusBig = findViewById(R.id.subDelayMinusBig)
+        subDelayMinus = findViewById(R.id.subDelayMinus)
+        subDelayPlus = findViewById(R.id.subDelayPlus)
+        subDelayPlusBig = findViewById(R.id.subDelayPlusBig)
     }
     
     private fun setVideoTitle() {
@@ -230,7 +262,6 @@ class PlayerActivity : AppCompatActivity() {
         
         // Back button
         btnBack.setOnClickListener { 
-            isUserExiting = true
             finish() 
         }
         
@@ -255,6 +286,18 @@ class PlayerActivity : AppCompatActivity() {
         // Picture-in-picture button (hidden on devices that can't do PiP)
         btnPip.visibility = if (supportsPip()) View.VISIBLE else View.GONE
         btnPip.setOnClickListener { enterPip() }
+        
+        // Aspect mode (fit / crop / stretch), remembered between videos
+        aspectMode = loadAspectMode()
+        videoView.mode = aspectMode
+        btnAspect.setOnClickListener { cycleAspectMode() }
+        
+        // Subtitle delay controls in the settings menu (tap the label to reset)
+        subDelayLabel.setOnClickListener { setSubtitleDelay(0L) }
+        subDelayMinusBig.setOnClickListener { setSubtitleDelay(subtitleOffsetMs - SUB_STEP_BIG) }
+        subDelayMinus.setOnClickListener { setSubtitleDelay(subtitleOffsetMs - SUB_STEP_SMALL) }
+        subDelayPlus.setOnClickListener { setSubtitleDelay(subtitleOffsetMs + SUB_STEP_SMALL) }
+        subDelayPlusBig.setOnClickListener { setSubtitleDelay(subtitleOffsetMs + SUB_STEP_BIG) }
 
         // Locked indicator (to unlock)
         lockedIndicator.setOnClickListener { toggleLock() }
@@ -384,7 +427,8 @@ class PlayerActivity : AppCompatActivity() {
     
     private fun parseSubtitles(content: String): List<SubtitleEntry> {
         val entries = mutableListOf<SubtitleEntry>()
-        val lines = content.split("\n")
+        // Strip a UTF-8 byte order mark, otherwise the first cue is silently dropped
+        val lines = content.removePrefix("\uFEFF").split("\n")
         var i = 0
         
         while (i < lines.size) {
@@ -395,7 +439,7 @@ class PlayerActivity : AppCompatActivity() {
                 
                 // Parse time
                 val timeLine = lines[i].trim()
-                val times = timeLine.split(" --> ")
+                val times = timeLine.split("-->")
                 if (times.size == 2) {
                     val startTime = parseTime(times[0].trim())
                     val endTime = parseTime(times[1].trim())
@@ -440,7 +484,7 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         
-        val currentPosition = videoView.currentPosition.toLong()
+        val currentPosition = videoView.currentPosition.toLong() - subtitleOffsetMs
         val currentSubtitle = subtitles.find { it.startTime <= currentPosition && currentPosition <= it.endTime }
         
         if (currentSubtitle != null) {
@@ -466,7 +510,8 @@ class PlayerActivity : AppCompatActivity() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 if (isLocked) return false
                 
-                val screenWidth = videoView.width
+                // The video view can be wider than the screen in crop mode
+                val screenWidth = (videoView.parent as View).width
                 val x = e.x
                 val middle = screenWidth / 3f
                 
@@ -596,12 +641,13 @@ class PlayerActivity : AppCompatActivity() {
             // Remember the video's shape so the PiP window matches it
             if (mediaPlayer.videoWidth > 0 && mediaPlayer.videoHeight > 0) {
                 videoAspect = clampAspect(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
+                videoView.setContentSize(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
             }
             updatePipParams()
 
             // Check for saved position and show resume dialog if needed
             val savedPosition = getSavedPosition()
-            if (savedPosition > 0 && savedPosition < duration - 5000) { // At least 5 seconds before end
+            if (savedPosition > MIN_RESUME_POSITION && savedPosition < duration - END_MARGIN_MS) {
                 showResumeDialog(savedPosition)
             } else {
                 // Start playback normally
@@ -621,14 +667,13 @@ class PlayerActivity : AppCompatActivity() {
             if (playlist != null && currentVideoIndex < playlist!!.size - 1) {
                 playNextVideo()
             } else {
-                isUserExiting = true
                 finish()
             }
         }
 
-        videoView.setOnErrorListener { _, what, extra ->
-            // Handle error
-            isUserExiting = true
+        videoView.setOnErrorListener { _, _, _ ->
+            // Usually an unsupported codec/profile (e.g. 10-bit H.264): say so instead of just closing
+            Toast.makeText(this, "Can't play this video (unsupported format?)", Toast.LENGTH_LONG).show()
             finish()
             true
         }
@@ -637,6 +682,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun updateSeekBar() {
         if (videoView.duration > 0) {
             val current = videoView.currentPosition
+            lastKnownPosition = current
             seekBar.progress = current
             currentTimeText.text = formatTime(current)
         }
@@ -650,6 +696,8 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun loadSubtitles() {
+        subtitleOffsetMs = getSavedSubtitleOffset()
+        updateSubDelayLabel()
         videoPath?.let { path ->
             val videoFile = File(path)
             val subtitlePath = path.substring(0, path.lastIndexOf('.')) + ".srt"
@@ -707,7 +755,10 @@ class PlayerActivity : AppCompatActivity() {
     
     private fun showSeekFeedback(milliseconds: Int) {
         val seconds = milliseconds / 1000
-        val text = if (seconds > 0) "+${seconds}s" else "${seconds}s"
+        showFeedbackText(if (seconds > 0) "+${seconds}s" else "${seconds}s")
+    }
+    
+    private fun showFeedbackText(text: String) {
         seekFeedback.text = text
         seekFeedback.visibility = View.VISIBLE
         
@@ -741,6 +792,8 @@ class PlayerActivity : AppCompatActivity() {
     
     private fun loadVideoAtIndex(index: Int) {
         playlist?.get(index)?.let { video ->
+            // Remember where we were in the video we are leaving
+            savePositionIfMeaningful()
             videoPath = video.path
             videoTitle.text = video.name
             
@@ -864,9 +917,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         // Save current position and playing state (crucial for Bluetooth disconnect scenarios)
-        val currentPos = videoView.currentPosition
-        if (currentPos > 0) {
-            savePosition(currentPos)
+        if (savePositionIfMeaningful()) {
             saveWasPlaying(isPlaying)
         }
         
@@ -898,14 +949,15 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         if (pipActive) {
-            // Stopped while in PiP: either the PiP window was closed or the screen turned off
+            // Stopped while in PiP: either the PiP window was closed or the screen turned off.
+            // The video kept playing after onPause saved its position, so save the latest one.
             pipActive = false
+            savePositionIfMeaningful(lastKnownPosition, seekBar.max)
             videoView.pause()
             isPlaying = false
             updatePlayPauseButton()
             if (!isInPip()) {
-                // PiP window was dismissed, treat it like the user closing the player
-                isUserExiting = true
+                // PiP window was dismissed: close the player; the saved position is kept
                 finish()
             }
         }
@@ -930,7 +982,12 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             pipActive = true
+            videoView.mode = ScalableVideoView.Mode.FIT
             hideControls()
+            // With auto-enter (Android 12+) onPause runs before we know we are in PiP and
+            // stops the update loop; restart it so subtitles and the position keep moving
+            handler.removeCallbacks(updateSeekBarRunnable)
+            handler.post(updateSeekBarRunnable)
             lockedIndicator.visibility = View.GONE
             seekFeedback.visibility = View.GONE
             applyPipSubtitleStyle(true)
@@ -941,6 +998,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         } else {
             unregisterPipReceiver()
+            videoView.mode = aspectMode
             applyPipSubtitleStyle(false)
             if (isLocked) {
                 lockedIndicator.visibility = View.VISIBLE
@@ -1075,11 +1133,6 @@ class PlayerActivity : AppCompatActivity() {
         subtitleText.layoutParams = params
     }
 
-    override fun onBackPressed() {
-        isUserExiting = true
-        super.onBackPressed()
-    }
-    
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // Save state when system kills the activity (e.g., Bluetooth, low memory)
@@ -1106,11 +1159,8 @@ class PlayerActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
-        // Only clear saved position if user is intentionally exiting
-        // Don't clear if system is killing the activity (e.g., Bluetooth, rotation)
-        if (isUserExiting || isFinishing) {
-            clearSavedPosition()
-        }
+        // The saved position is kept on every exit (back, PiP closed, app killed).
+        // It is only cleared when the video finishes, see setOnCompletionListener.
         unregisterPipReceiver()
         videoView.stopPlayback()
         handler.removeCallbacks(updateSeekBarRunnable)
@@ -1118,6 +1168,120 @@ class PlayerActivity : AppCompatActivity() {
         handler.removeCallbacks(resetAccumulatedSeekRunnable)
     }
     
+    // ---- Fullscreen ----
+
+    private fun enterImmersiveMode() {
+        // FLAG_FULLSCREEN only hides the status bar; hide the navigation bar too and let
+        // it come back transiently with an edge swipe.
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Dialogs and the system bars swipe-in take the immersive state away; restore it
+        if (hasFocus) {
+            enterImmersiveMode()
+        }
+    }
+
+    // ---- Aspect mode ----
+
+    private fun cycleAspectMode() {
+        aspectMode = when (aspectMode) {
+            ScalableVideoView.Mode.FIT -> ScalableVideoView.Mode.CROP
+            ScalableVideoView.Mode.CROP -> ScalableVideoView.Mode.STRETCH
+            ScalableVideoView.Mode.STRETCH -> ScalableVideoView.Mode.FIT
+        }
+        videoView.mode = aspectMode
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putString(KEY_ASPECT_MODE, aspectMode.name).apply()
+        showFeedbackText(
+            when (aspectMode) {
+                ScalableVideoView.Mode.FIT -> "Fit"
+                ScalableVideoView.Mode.CROP -> "Crop"
+                ScalableVideoView.Mode.STRETCH -> "Stretch"
+            }
+        )
+        scheduleHideControls()
+    }
+
+    private fun loadAspectMode(): ScalableVideoView.Mode {
+        val name = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_ASPECT_MODE, null)
+        return ScalableVideoView.Mode.values().firstOrNull { it.name == name }
+            ?: ScalableVideoView.Mode.FIT
+    }
+
+    // ---- Subtitle delay ----
+
+    private fun setSubtitleDelay(newOffsetMs: Long) {
+        subtitleOffsetMs = newOffsetMs
+        videoPath?.let { path ->
+            val editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+            if (newOffsetMs == 0L) {
+                editor.remove(KEY_SUB_OFFSET + path)
+            } else {
+                editor.putLong(KEY_SUB_OFFSET + path, newOffsetMs)
+            }
+            editor.apply()
+        }
+        updateSubDelayLabel()
+        updateSubtitle()
+    }
+
+    private fun getSavedSubtitleOffset(): Long {
+        return videoPath?.let { path ->
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getLong(KEY_SUB_OFFSET + path, 0L)
+        } ?: 0L
+    }
+
+    private fun updateSubDelayLabel() {
+        val seconds = subtitleOffsetMs / 1000.0
+        subDelayLabel.text = if (subtitleOffsetMs == 0L) {
+            "Subtitle delay: 0.0 s"
+        } else {
+            String.format(Locale.US, "Subtitle delay: %+.1f s", seconds)
+        }
+    }
+
+    // ---- Resume position ----
+
+    /**
+     * Saves the playback position unless it is too close to the start to matter.
+     * Near the end the video counts as finished, so the saved position is cleared.
+     * Returns true if a position was saved.
+     */
+    private fun savePositionIfMeaningful(
+        position: Int = videoView.currentPosition,
+        duration: Int = videoView.duration
+    ): Boolean {
+        if (duration <= 0 || position < 0) return false
+        return when {
+            position >= duration - END_MARGIN_MS -> {
+                clearSavedPosition()
+                false
+            }
+            position > MIN_RESUME_POSITION -> {
+                savePosition(position)
+                true
+            }
+            else -> false
+        }
+    }
+
+    // Also save while playing, so a crash or a killed app still resumes close to where it was
+    private fun savePositionPeriodically() {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastPeriodicSave < PERIODIC_SAVE_INTERVAL) return
+        lastPeriodicSave = now
+        if (videoView.isPlaying) {
+            savePositionIfMeaningful()
+        }
+    }
+
     // Helper methods for saving/loading position
     private fun savePosition(position: Int) {
         videoPath?.let { path ->
@@ -1214,6 +1378,7 @@ class PlayerActivity : AppCompatActivity() {
                 editor.remove(KEY_VIDEO_POSITION + oldestVideo)
                 editor.remove(KEY_WAS_PLAYING + oldestVideo)
                 editor.remove(KEY_TIMESTAMP + oldestVideo)
+                editor.remove(KEY_SUB_OFFSET + oldestVideo)
             }
             
             // Save updated list

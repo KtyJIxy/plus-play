@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <VideoView
+    <com.plusplay.app.ScalableVideoView
         android:id="@+id/videoView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -78,6 +78,15 @@
                 android:maxLines="1" />
 
             <ImageButton
+                android:id="@+id/btnAspect"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Fit, crop or stretch"
+                android:src="@drawable/ic_pp_aspect"
+                android:tint="@color/white" />
+
+            <ImageButton
                 android:id="@+id/btnPip"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
@@ -118,7 +127,7 @@
         <!-- Settings dropdown list -->
         <LinearLayout
             android:id="@+id/settingsDropdown"
-            android:layout_width="240dp"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
@@ -152,6 +161,71 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:background="?android:attr/selectableItemBackground" />
+
+            <!-- Subtitle delay: tap the label to reset -->
+            <TextView
+                android:id="@+id/subDelayLabel"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Subtitle delay: 0.0 s"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:maxLines="1"
+                android:background="?android:attr/selectableItemBackground" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/subDelayMinusBig"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="-5s"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subDelayMinus"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="-0.5s"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subDelayPlus"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="+0.5s"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subDelayPlusBig"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="+5s"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
