@@ -151,8 +151,8 @@ class PlayerActivity : AppCompatActivity() {
         private const val MIN_RESUME_POSITION = 5000
         private const val END_MARGIN_MS = 5000
         private const val PERIODIC_SAVE_INTERVAL = 10000L
-        private const val SUB_STEP_SMALL = 500L
-        private const val SUB_STEP_BIG = 5000L
+        private const val SUB_STEP_SMALL = 100L
+        private const val SUB_STEP_BIG = 1000L
 
         // Picture-in-picture remote actions
         private const val ACTION_PIP_CONTROL = "com.plusplay.app.PIP_CONTROL"

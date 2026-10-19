@@ -29,8 +29,8 @@ disagree, this file describes the fork's behaviour.
 - The choice is remembered between videos.
 
 ### Subtitle delay
-- Settings (gear icon) has a **Subtitle delay** row. Buttons shift subtitles by -5 s, -0.5 s,
-  +0.5 s and +5 s; tapping the label resets it. A positive value makes subtitles appear later.
+- Settings (gear icon) has a **Subtitle delay** row. Buttons shift subtitles by -1 s, -0.1 s,
+  +0.1 s and +1 s; tapping the label resets it. A positive value makes subtitles appear later.
 - The delay is saved per video.
 - `.srt` parsing now tolerates a UTF-8 byte order mark (it used to drop the first cue) and
   different spacing around `-->`.
