@@ -2,6 +2,11 @@
 
 A minimal, lightweight Android video player app written in Kotlin that provides essential video playback features.
 
+> **This is a fork.** It adds picture-in-picture, portrait/landscape fullscreen, fit/crop/stretch,
+> subtitle delay and more reliable resume. See [FORK_CHANGES.md](FORK_CHANGES.md) for what changed,
+> what it costs, and how to download builds from GitHub Actions. Where it differs from the text
+> below (for example, the last 30 videos are remembered, not 3), FORK_CHANGES.md is correct.
+
 ## Features
 
 - **Video File Listing**: Scans and displays video files from device storage (.mp4, .mkv, .avi, .mov)
@@ -22,7 +27,7 @@ A minimal, lightweight Android video player app written in Kotlin that provides 
 
 ## Requirements
 
-- Android 5.0 (API level 21) or higher
+- Android 5.0 (API level 21) or higher (picture-in-picture needs Android 8.0 or higher)
 - Storage permissions for accessing video files
 
 ## Building
