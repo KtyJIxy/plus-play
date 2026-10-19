@@ -1,0 +1,122 @@
+name: Build APK
+
+# Builds installable debug and release APKs on every push, so changes can be tested without a
+# local Android toolchain. Download them from the run's "Artifacts" section.
+#
+# Optional repository secrets give every build the SAME signature, so a new build installs over
+# the previous one and keeps app data:
+#   KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD (KEY_PASSWORD defaults to the store password)
+# Without them each build is signed with a throwaway key and must be installed after uninstalling
+# the previous one.
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make sure the Android build tools are installed
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null || true
+            "$SDKMANAGER" "platforms;android-33" "build-tools;34.0.0" > /dev/null
+          else
+            echo "sdkmanager not found; relying on Gradle to fetch what it needs"
+          fi
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # The release build shrinks code with R8; keep going if it fails so the debug APK is still delivered
+      - name: Build release APK
+        id: release
+        continue-on-error: true
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Sign APKs
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          APKSIGNER="$ANDROID_HOME/build-tools/34.0.0/apksigner"
+          test -x "$APKSIGNER"
+          KS="$RUNNER_TEMP/signing.jks"
+
+          if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEY_ALIAS:-}" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$KS"
+            export STORE_PASS="$KEYSTORE_PASSWORD"
+            export KEY_PASS="${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+            ALIAS="$KEY_ALIAS"
+            SIGNING_NOTE="your repository keystore (stable signature: builds install over each other)"
+          else
+            export STORE_PASS=android
+            export KEY_PASS=android
+            ALIAS=throwaway
+            keytool -genkeypair -keystore "$KS" -storetype PKCS12 -storepass "$STORE_PASS" \
+              -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Plus Play CI throwaway key"
+            SIGNING_NOTE="a throwaway key (uninstall the previous build before installing this one)"
+          fi
+
+          SHA="${GITHUB_SHA::7}"
+          mkdir -p dist
+
+          sign() { # input output
+            "$APKSIGNER" sign --ks "$KS" --ks-key-alias "$ALIAS" \
+              --ks-pass env:STORE_PASS --key-pass env:KEY_PASS --out "$2" "$1"
+            "$APKSIGNER" verify "$2"
+          }
+
+          sign app/build/outputs/apk/debug/app-debug.apk "dist/plus-play-debug-$SHA.apk"
+
+          RELEASE_APK=app/build/outputs/apk/release/app-release-unsigned.apk
+          if [ -f "$RELEASE_APK" ]; then
+            sign "$RELEASE_APK" "dist/plus-play-release-$SHA.apk"
+          else
+            echo "::warning::The release build failed; only the debug APK is attached. See the 'Build release APK' step."
+          fi
+
+          {
+            echo "### APKs"
+            echo
+            echo "Signed with: $SIGNING_NOTE"
+            echo
+            echo "| File | Size |"
+            echo "|---|---|"
+            for f in dist/*.apk; do
+              echo "| $(basename "$f") | $(du -h "$f" | cut -f1) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: plus-play-apks-${{ github.run_number }}
+          path: dist/*.apk
+          retention-days: 30
+          if-no-files-found: error
