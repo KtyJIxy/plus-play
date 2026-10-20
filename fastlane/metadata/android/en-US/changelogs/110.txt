@@ -1,0 +1,6 @@
+- Picture-in-picture (Android 8.0+), with an optional wide window
+- Fullscreen that also hides the navigation bar, in portrait and landscape
+- Fit / crop / stretch video scaling
+- Subtitle delay in 0.1 s and 1 s steps, saved per video
+- Resume position kept on every exit; last 30 videos remembered
+- Message instead of a silent close when a file cannot be played
