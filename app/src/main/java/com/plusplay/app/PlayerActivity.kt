@@ -80,6 +80,11 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var subDelayMinus: TextView
     private lateinit var subDelayPlus: TextView
     private lateinit var subDelayPlusBig: TextView
+    private lateinit var subSizeLabel: TextView
+    private lateinit var subSizeMinusBig: TextView
+    private lateinit var subSizeMinus: TextView
+    private lateinit var subSizePlus: TextView
+    private lateinit var subSizePlusBig: TextView
     
     private var isPlaying = true
     private var videoPath: String? = null
@@ -90,6 +95,9 @@ class PlayerActivity : AppCompatActivity() {
     private var currentSubtitlePath: String? = null
     // Subtitle delay in ms; positive = subtitles appear later
     private var subtitleOffsetMs = 0L
+    // Subtitle size in dp (ignores the system font scale), saved for all videos
+    private var subtitleSizeDp = SUB_SIZE_DEFAULT
+    private var subtitlePreviewUntil = 0L
     private var aspectMode = ScalableVideoView.Mode.FIT
     // Last position seen while playing; the player may already be released in onStop
     private var lastKnownPosition = 0
@@ -155,6 +163,16 @@ class PlayerActivity : AppCompatActivity() {
         private const val PERIODIC_SAVE_INTERVAL = 10000L
         private const val SUB_STEP_SMALL = 100L
         private const val SUB_STEP_BIG = 1000L
+        private const val KEY_SUB_SIZE = "sub_size_dp"
+        private const val SUB_SIZE_DEFAULT = 16
+        private const val SUB_SIZE_MIN = 8
+        private const val SUB_SIZE_MAX = 48
+        private const val SUB_SIZE_STEP_SMALL = 1
+        private const val SUB_SIZE_STEP_BIG = 4
+        // In picture-in-picture subtitles are drawn at this fraction of the chosen size
+        private const val PIP_SUB_SIZE_FACTOR = 0.6f
+        private const val PIP_SUB_SIZE_MIN = 8f
+        private const val SUB_PREVIEW_MS = 2000L
 
         // Picture-in-picture remote actions
         private const val ACTION_PIP_CONTROL = "com.plusplay.app.PIP_CONTROL"
@@ -239,6 +257,11 @@ class PlayerActivity : AppCompatActivity() {
         subDelayMinus = findViewById(R.id.subDelayMinus)
         subDelayPlus = findViewById(R.id.subDelayPlus)
         subDelayPlusBig = findViewById(R.id.subDelayPlusBig)
+        subSizeLabel = findViewById(R.id.subSizeLabel)
+        subSizeMinusBig = findViewById(R.id.subSizeMinusBig)
+        subSizeMinus = findViewById(R.id.subSizeMinus)
+        subSizePlus = findViewById(R.id.subSizePlus)
+        subSizePlusBig = findViewById(R.id.subSizePlusBig)
     }
     
     private fun setVideoTitle() {
@@ -303,6 +326,16 @@ class PlayerActivity : AppCompatActivity() {
         subDelayMinus.setOnClickListener { setSubtitleDelay(subtitleOffsetMs - SUB_STEP_SMALL) }
         subDelayPlus.setOnClickListener { setSubtitleDelay(subtitleOffsetMs + SUB_STEP_SMALL) }
         subDelayPlusBig.setOnClickListener { setSubtitleDelay(subtitleOffsetMs + SUB_STEP_BIG) }
+
+        // Subtitle size controls (tap the label to reset)
+        subtitleSizeDp = loadSubtitleSize()
+        applySubtitleSize(isInPip())
+        updateSubSizeLabel()
+        subSizeLabel.setOnClickListener { setSubtitleSize(SUB_SIZE_DEFAULT) }
+        subSizeMinusBig.setOnClickListener { setSubtitleSize(subtitleSizeDp - SUB_SIZE_STEP_BIG) }
+        subSizeMinus.setOnClickListener { setSubtitleSize(subtitleSizeDp - SUB_SIZE_STEP_SMALL) }
+        subSizePlus.setOnClickListener { setSubtitleSize(subtitleSizeDp + SUB_SIZE_STEP_SMALL) }
+        subSizePlusBig.setOnClickListener { setSubtitleSize(subtitleSizeDp + SUB_SIZE_STEP_BIG) }
 
         // Locked indicator (to unlock)
         lockedIndicator.setOnClickListener { toggleLock() }
@@ -484,6 +517,8 @@ class PlayerActivity : AppCompatActivity() {
     }
     
     private fun updateSubtitle() {
+        // Leave the size preview alone while it is showing
+        if (SystemClock.elapsedRealtime() < subtitlePreviewUntil) return
         if (subtitles.isEmpty()) {
             subtitleText.visibility = View.GONE
             return
@@ -1155,7 +1190,7 @@ class PlayerActivity : AppCompatActivity() {
 
     // Subtitles are sized for a full screen; shrink them so they fit a PiP window
     private fun applyPipSubtitleStyle(inPip: Boolean) {
-        subtitleText.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (inPip) 10f else 16f)
+        applySubtitleSize(inPip)
         val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
         val marginDp = if (inPip) 4 else 80
         params.bottomMargin = (marginDp * resources.displayMetrics.density).toInt()
@@ -1270,9 +1305,50 @@ class PlayerActivity : AppCompatActivity() {
     private fun updateSubDelayLabel() {
         val seconds = subtitleOffsetMs / 1000.0
         subDelayLabel.text = if (subtitleOffsetMs == 0L) {
-            "Subtitle delay: 0.0 s"
+            "Delay 0.0s"
         } else {
-            String.format(Locale.US, "Subtitle delay: %+.1f s", seconds)
+            String.format(Locale.US, "Delay %+.1fs", seconds)
+        }
+    }
+
+    // ---- Subtitle size ----
+
+    // Sized in dp, not sp, so it does not follow the system-wide font size setting
+    private fun applySubtitleSize(inPip: Boolean) {
+        val size = if (inPip) {
+            maxOf(PIP_SUB_SIZE_MIN, subtitleSizeDp * PIP_SUB_SIZE_FACTOR)
+        } else {
+            subtitleSizeDp.toFloat()
+        }
+        subtitleText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
+    }
+
+    private fun setSubtitleSize(newSizeDp: Int) {
+        subtitleSizeDp = newSizeDp.coerceIn(SUB_SIZE_MIN, SUB_SIZE_MAX)
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putInt(KEY_SUB_SIZE, subtitleSizeDp).apply()
+        applySubtitleSize(isInPip())
+        updateSubSizeLabel()
+        showSubtitlePreview()
+    }
+
+    private fun loadSubtitleSize(): Int {
+        return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getInt(KEY_SUB_SIZE, SUB_SIZE_DEFAULT)
+            .coerceIn(SUB_SIZE_MIN, SUB_SIZE_MAX)
+    }
+
+    private fun updateSubSizeLabel() {
+        subSizeLabel.text = "Size $subtitleSizeDp"
+    }
+
+    // Show sample text while adjusting, unless a real subtitle is already on screen
+    private fun showSubtitlePreview() {
+        val previewActive = SystemClock.elapsedRealtime() < subtitlePreviewUntil
+        if (subtitleText.visibility != View.VISIBLE || previewActive) {
+            subtitleText.text = "Subtitle size preview"
+            subtitleText.visibility = View.VISIBLE
+            subtitlePreviewUntil = SystemClock.elapsedRealtime() + SUB_PREVIEW_MS
         }
     }
 

@@ -52,6 +52,12 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - `.srt` parsing tolerates a UTF-8 byte order mark (it used to drop the first line) and
   different spacing around `-->`.
 
+### Subtitle size
+- Settings (gear icon) has a size control with -4, -1, +1 and +4 buttons; tap the label to
+  reset. While you adjust it, sample text is shown if no subtitle is on screen.
+- The size is set in dp, so it ignores the system-wide font size setting, and it applies to
+  all videos. In picture-in-picture subtitles are drawn at 60% of the chosen size.
+
 ### Resume position
 - The position is saved however you leave: Back, closing PiP, swiping the app away, or the system
   killing it. It is also saved every 10 s while playing.
@@ -93,7 +99,7 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 | Single tap | Show / hide the controls |
 
 Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotate, settings
-(subtitle files and delay), lock (disables gestures).
+(subtitle files, delay and size), lock (disables gestures).
 
 ## Building
 
