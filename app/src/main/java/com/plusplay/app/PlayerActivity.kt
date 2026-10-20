@@ -97,6 +97,8 @@ class PlayerActivity : AppCompatActivity() {
 
     // Picture-in-picture state
     private var videoAspect = Rational(16, 9)
+    // Wide PiP window (experimental), remembered between sessions
+    private var pipWide = false
     private var pipActive = false // True from entering PiP until the activity is resumed or stopped
     private var suppressAutoPip = false // Set while we launch another screen (e.g. subtitle picker)
     private var pipReceiver: BroadcastReceiver? = null
@@ -160,6 +162,8 @@ class PlayerActivity : AppCompatActivity() {
         private const val PIP_REWIND = 1
         private const val PIP_PLAY_PAUSE = 2
         private const val PIP_FORWARD = 3
+        private const val PIP_SIZE = 4
+        private const val KEY_PIP_WIDE = "pip_wide"
         // Android only accepts PiP aspect ratios between 1:2.39 and 2.39:1
         private const val PIP_MAX_RATIO = 2.38f
     }
@@ -286,6 +290,7 @@ class PlayerActivity : AppCompatActivity() {
         // Picture-in-picture button (hidden on devices that can't do PiP)
         btnPip.visibility = if (supportsPip()) View.VISIBLE else View.GONE
         btnPip.setOnClickListener { enterPip() }
+        pipWide = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(KEY_PIP_WIDE, false)
         
         // Aspect mode (fit / crop / stretch), remembered between videos
         aspectMode = loadAspectMode()
@@ -982,7 +987,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             pipActive = true
-            videoView.mode = ScalableVideoView.Mode.FIT
+            videoView.mode = if (pipWide) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
             hideControls()
             // With auto-enter (Android 12+) onPause runs before we know we are in PiP and
             // stops the update loop; restart it so subtitles and the position keep moving
@@ -1042,13 +1047,26 @@ class PlayerActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun buildPipParams(): PictureInPictureParams {
         val builder = PictureInPictureParams.Builder()
-            .setAspectRatio(videoAspect)
+            .setAspectRatio(pipAspectRatio())
             .setActions(buildPipActions())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // Only slide into PiP on Home gesture while something is actually playing
             builder.setAutoEnterEnabled(videoView.isPlaying)
         }
         return builder.build()
+    }
+
+    // Android sizes the PiP window from its aspect ratio (the app cannot set a size), and a wider
+    // ratio gives a wider window. In wide mode ask for the widest ratio Android accepts and crop
+    // the video to fill it, trading some of the top and bottom of the picture for window size.
+    private fun pipAspectRatio(): Rational = if (pipWide) Rational(238, 100) else videoAspect
+
+    private fun togglePipWide() {
+        pipWide = !pipWide
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_PIP_WIDE, pipWide).apply()
+        videoView.mode = if (pipWide) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
+        updatePipParams()
     }
 
     private fun updatePipParams() {
@@ -1066,15 +1084,25 @@ class PlayerActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun buildPipActions(): List<RemoteAction> {
         val playing = videoView.isPlaying
-        return listOf(
+        val actions = mutableListOf(
             pipAction(R.drawable.ic_pp_rewind, "Rewind 10s", PIP_REWIND),
             pipAction(
                 if (playing) R.drawable.ic_pp_pause else R.drawable.ic_pp_play,
                 if (playing) "Pause" else "Play",
                 PIP_PLAY_PAUSE
             ),
-            pipAction(R.drawable.ic_pp_fast_forward, "Forward 10s", PIP_FORWARD)
+            pipAction(R.drawable.ic_pp_fast_forward, "Forward 10s", PIP_FORWARD),
+            pipAction(R.drawable.ic_pp_aspect, if (pipWide) "Normal size" else "Wide size", PIP_SIZE)
         )
+        // Phones usually allow only 3 actions: drop "forward" first so the size button fits
+        val max = getMaxNumPictureInPictureActions()
+        if (actions.size > max && actions.size > 2) {
+            actions.removeAt(2)
+        }
+        while (actions.size > max && actions.isNotEmpty()) {
+            actions.removeAt(actions.size - 1)
+        }
+        return actions
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -1101,6 +1129,7 @@ class PlayerActivity : AppCompatActivity() {
                     PIP_REWIND -> seekRelative(-10000)
                     PIP_FORWARD -> seekRelative(10000)
                     PIP_PLAY_PAUSE -> togglePlayPause()
+                    PIP_SIZE -> togglePipWide()
                 }
             }
         }

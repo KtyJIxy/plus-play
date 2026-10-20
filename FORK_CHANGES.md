@@ -11,11 +11,16 @@ disagree, this file describes the fork's behaviour.
   gesture) while a video is playing.
 - The PiP window takes the video's shape. Android only accepts shapes between 1:2.39 and
   2.39:1, so extreme aspect ratios are clamped.
-- Rewind 10 s, play/pause and forward 10 s buttons inside the PiP window.
+- Rewind 10 s, play/pause and forward 10 s buttons inside the PiP window. Phones usually allow
+  only three buttons, so when the size button below is shown, forward is left out.
+- **Wide size (experimental):** a button in the PiP window switches between the video's own
+  shape and the widest shape Android accepts (2.38:1). The window gets wider and the video is
+  cropped at the top and bottom to fill it. The choice is remembered.
 - Playback continues in the window. Tapping it returns to full screen; closing it with the
   cross closes the player and keeps the resume position.
 - Subtitles shrink to fit the small window. Fit / crop / stretch is ignored in PiP (always fit).
-- The **size** of the PiP window is chosen by Android, not by the app. On Android 12+ you can
+- The **size** of the PiP window is chosen by Android, not by the app (the app only supplies
+  the shape, which is what wide size uses). On Android 12+ you can
   pinch the window to resize it, or double-tap it to toggle between the normal and the
   maximum size.
 
