@@ -108,8 +108,9 @@ class PlayerActivity : AppCompatActivity() {
 
     // Picture-in-picture state
     private var videoAspect = Rational(16, 9)
-    // Wide PiP window (experimental), remembered between sessions
-    private var pipWide = false
+    // PiP window shape (experimental): 0 = the video's own shape, 1..3 = wider presets;
+    // remembered between sessions
+    private var pipLevel = 0
     private var pipActive = false // True from entering PiP until the activity is resumed or stopped
     private var suppressAutoPip = false // Set while we launch another screen (e.g. subtitle picker)
     private var pipReceiver: BroadcastReceiver? = null
@@ -188,7 +189,10 @@ class PlayerActivity : AppCompatActivity() {
         private const val PIP_PLAY_PAUSE = 2
         private const val PIP_FORWARD = 3
         private const val PIP_SIZE = 4
-        private const val KEY_PIP_WIDE = "pip_wide"
+        private const val KEY_PIP_WIDE = "pip_wide" // old on/off switch, kept to migrate it
+        private const val KEY_PIP_LEVEL = "pip_level"
+        // Aspect ratios (x100) of the PiP size levels; level 0 uses the video's own shape
+        private val PIP_LEVEL_RATIOS = intArrayOf(0, 200, 220, 238)
         // Android only accepts PiP aspect ratios between 1:2.39 and 2.39:1
         private const val PIP_MAX_RATIO = 2.38f
     }
@@ -320,7 +324,11 @@ class PlayerActivity : AppCompatActivity() {
         // Picture-in-picture button (hidden on devices that can't do PiP)
         btnPip.visibility = if (supportsPip()) View.VISIBLE else View.GONE
         btnPip.setOnClickListener { enterPip() }
-        pipWide = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(KEY_PIP_WIDE, false)
+        val pipPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        // The old wide switch meant the widest ratio
+        val oldWide = pipPrefs.getBoolean(KEY_PIP_WIDE, false)
+        pipLevel = pipPrefs.getInt(KEY_PIP_LEVEL, if (oldWide) PIP_LEVEL_RATIOS.size - 1 else 0)
+            .coerceIn(0, PIP_LEVEL_RATIOS.size - 1)
         
         // Aspect mode (fit / crop / stretch), remembered between videos
         aspectMode = loadAspectMode()
@@ -1030,7 +1038,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             pipActive = true
-            videoView.mode = if (pipWide) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
+            videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
             hideControls()
             // With auto-enter (Android 12+) onPause runs before we know we are in PiP and
             // stops the update loop; restart it so subtitles and the position keep moving
@@ -1100,16 +1108,27 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     // Android sizes the PiP window from its aspect ratio (the app cannot set a size), and a wider
-    // ratio gives a wider window. In wide mode ask for the widest ratio Android accepts and crop
-    // the video to fill it, trading some of the top and bottom of the picture for window size.
-    private fun pipAspectRatio(): Rational = if (pipWide) Rational(238, 100) else videoAspect
+    // ratio gives a wider window. While the window's controls are showing, Android 8.0 grows it
+    // by about half again (160 dp instead of 108 dp for the short edge), so the widest ratio
+    // fills the screen width on a tap. The levels let you choose how wide to go; the video is
+    // cropped to fill the window and is never shown narrower than its own shape.
+    private fun pipAspectRatio(): Rational {
+        val ratio100 = PIP_LEVEL_RATIOS[pipLevel]
+        if (ratio100 == 0) return videoAspect
+        val preset = Rational(ratio100, 100)
+        return if (preset.toFloat() > videoAspect.toFloat()) preset else videoAspect
+    }
 
-    private fun togglePipWide() {
-        pipWide = !pipWide
+    private fun cyclePipSize() {
+        pipLevel = (pipLevel + 1) % PIP_LEVEL_RATIOS.size
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit().putBoolean(KEY_PIP_WIDE, pipWide).apply()
-        videoView.mode = if (pipWide) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
+            .edit().putInt(KEY_PIP_LEVEL, pipLevel).apply()
+        videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
         updatePipParams()
+    }
+
+    private fun pipSizeTitle(): String {
+        return if (pipLevel == 0) "Size: video shape" else "Size: ${PIP_LEVEL_RATIOS[pipLevel] / 100f}:1"
     }
 
     private fun updatePipParams() {
@@ -1135,7 +1154,7 @@ class PlayerActivity : AppCompatActivity() {
                 PIP_PLAY_PAUSE
             ),
             pipAction(R.drawable.ic_pp_fast_forward, "Forward 10s", PIP_FORWARD),
-            pipAction(R.drawable.ic_pp_aspect, if (pipWide) "Normal size" else "Wide size", PIP_SIZE)
+            pipAction(R.drawable.ic_pp_aspect, pipSizeTitle(), PIP_SIZE)
         )
         // Phones usually allow only 3 actions: drop "forward" first so the size button fits
         val max = getMaxNumPictureInPictureActions()
@@ -1172,7 +1191,7 @@ class PlayerActivity : AppCompatActivity() {
                     PIP_REWIND -> seekRelative(-10000)
                     PIP_FORWARD -> seekRelative(10000)
                     PIP_PLAY_PAUSE -> togglePlayPause()
-                    PIP_SIZE -> togglePipWide()
+                    PIP_SIZE -> cyclePipSize()
                 }
             }
         }

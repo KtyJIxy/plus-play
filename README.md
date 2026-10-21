@@ -29,9 +29,11 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - The window takes the video's shape (Android only accepts shapes between 1:2.39 and 2.39:1).
 - Rewind 10 s, play/pause and forward 10 s buttons inside the window. Phones that allow only
   three buttons lose forward, to make room for the size button below.
-- **Wide size (experimental):** a button in the PiP window switches between the video's own
-  shape and the widest shape Android accepts (2.38:1). The window gets wider and the video is
-  cropped at the top and bottom to fill it. The choice is remembered.
+- **Window size (experimental):** a button in the PiP window cycles the window's shape through
+  the video's own shape, 2.0:1, 2.2:1 and 2.38:1. A wider shape gives a wider window, and the
+  video is cropped at the top and bottom to fill it. The choice is remembered. Android 8.0
+  also grows the window by about half while its controls are showing, so the widest shape
+  fills the screen width when you tap the window; the narrower shapes grow less.
 - Playback continues in the window. Tapping it returns to full screen; closing it with the
   cross closes the player and keeps the resume position.
 - Subtitles shrink to fit the window.
@@ -84,7 +86,7 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - **Background work:** a small preferences write every 10 s during playback, and subtitles are
   checked 4 times a second instead of twice while a subtitle file is loaded.
 - **Top bar:** two more buttons, so the video title gets less room in portrait.
-- **Testing:** built and run by hand on one phone (Android 8.0). There are no automated tests.
+- **Testing:** built and run by hand on one phone. There are no automated tests.
 
 ## Limits (unchanged from upstream)
 
@@ -170,4 +172,5 @@ Built on core Android APIs only: `VideoView`, `MediaStore`, `RecyclerView` and `
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Original work by Kazi Mohammad Foysal; fork changes by KtyJIxy.
+MIT, see [LICENSE](LICENSE). Original work by Kazi Mohammad Foysal. The fork's changes were
+written by Claude (Anthropic), directed and tested by KtyJIxy.
