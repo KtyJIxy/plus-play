@@ -21,20 +21,19 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- Subtitle text -->
-    <TextView
+    <!-- Subtitle text: white with a black outline, no background. The player sets the size of
+         this box (a band over the bottom of the window) and the text shrinks to fit it. -->
+    <com.plusplay.app.OutlinedTextView
         android:id="@+id/subtitleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="80dp"
-        android:background="#CC000000"
-        android:padding="8dp"
+        android:padding="4dp"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:gravity="center"
+        android:gravity="center_horizontal|bottom"
         android:visibility="gone" />
 
     <!-- Control overlay -->

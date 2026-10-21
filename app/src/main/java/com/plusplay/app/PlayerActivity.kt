@@ -13,6 +13,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.Point
 import android.graphics.drawable.Icon
 import android.media.MediaPlayer
 import android.net.Uri
@@ -42,11 +43,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.widget.TextViewCompat
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -166,12 +169,16 @@ class PlayerActivity : AppCompatActivity() {
         private const val KEY_SUB_SIZE = "sub_size_dp"
         private const val SUB_SIZE_DEFAULT = 16
         private const val SUB_SIZE_MIN = 8
-        private const val SUB_SIZE_MAX = 48
+        private const val SUB_SIZE_MAX = 72
         private const val SUB_SIZE_STEP_SMALL = 1
         private const val SUB_SIZE_STEP_BIG = 4
-        // In picture-in-picture subtitles are drawn at this fraction of the chosen size
-        private const val PIP_SUB_SIZE_FACTOR = 0.6f
-        private const val PIP_SUB_SIZE_MIN = 8f
+        // Subtitles are laid out in a box over the bottom of the window and shrink to fit it
+        private const val SUB_BOX_WIDTH_FRACTION = 0.9f
+        private const val SUB_BOX_HEIGHT_FRACTION = 0.25f
+        private const val SUB_BOTTOM_MARGIN_FRACTION = 0.04f
+        private const val SUB_AUTOFIT_MIN_DP = 3
+        // A window narrower than this fraction of the display counts as small (picture-in-picture)
+        private const val SMALL_WINDOW_FRACTION = 0.8f
         private const val SUB_PREVIEW_MS = 2000L
 
         // Picture-in-picture remote actions
@@ -329,7 +336,8 @@ class PlayerActivity : AppCompatActivity() {
 
         // Subtitle size controls (tap the label to reset)
         subtitleSizeDp = loadSubtitleSize()
-        applySubtitleSize(isInPip())
+        applySubtitleSize()
+        watchSubtitleBox()
         updateSubSizeLabel()
         subSizeLabel.setOnClickListener { setSubtitleSize(SUB_SIZE_DEFAULT) }
         subSizeMinusBig.setOnClickListener { setSubtitleSize(subtitleSizeDp - SUB_SIZE_STEP_BIG) }
@@ -1030,7 +1038,7 @@ class PlayerActivity : AppCompatActivity() {
             handler.post(updateSeekBarRunnable)
             lockedIndicator.visibility = View.GONE
             seekFeedback.visibility = View.GONE
-            applyPipSubtitleStyle(true)
+            refreshSubtitleBox()
             registerPipReceiver()
             // onPause may have paused playback while the system moved us into PiP
             if (isPlaying && !videoView.isPlaying) {
@@ -1039,7 +1047,7 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             unregisterPipReceiver()
             videoView.mode = aspectMode
-            applyPipSubtitleStyle(false)
+            refreshSubtitleBox()
             if (isLocked) {
                 lockedIndicator.visibility = View.VISIBLE
             }
@@ -1188,15 +1196,6 @@ class PlayerActivity : AppCompatActivity() {
         pipReceiver = null
     }
 
-    // Subtitles are sized for a full screen; shrink them so they fit a PiP window
-    private fun applyPipSubtitleStyle(inPip: Boolean) {
-        applySubtitleSize(inPip)
-        val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
-        val marginDp = if (inPip) 4 else 80
-        params.bottomMargin = (marginDp * resources.displayMetrics.density).toInt()
-        subtitleText.layoutParams = params
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // Save state when system kills the activity (e.g., Bluetooth, low memory)
@@ -1313,21 +1312,72 @@ class PlayerActivity : AppCompatActivity() {
 
     // ---- Subtitle size ----
 
-    // Sized in dp, not sp, so it does not follow the system-wide font size setting
-    private fun applySubtitleSize(inPip: Boolean) {
-        val size = if (inPip) {
-            maxOf(PIP_SUB_SIZE_MIN, subtitleSizeDp * PIP_SUB_SIZE_FACTOR)
+    // The size setting is the largest size used. Subtitles shrink automatically so the whole text,
+    // one line or several, fits the box over the bottom of the window, and the largest size is
+    // scaled down with the window width, so one setting suits full screen and a small PiP window.
+    private fun applySubtitleSize(rootWidth: Int = subtitleRootWidth()) {
+        val realWidth = realDisplayWidth()
+        val scale = if (rootWidth > 0 && realWidth > 0) {
+            minOf(1f, rootWidth.toFloat() / realWidth)
         } else {
-            subtitleSizeDp.toFloat()
+            1f
         }
-        subtitleText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
+        val maxDp = maxOf(SUB_AUTOFIT_MIN_DP + 1, (subtitleSizeDp * scale).roundToInt())
+        // dp, not sp, so the system-wide font size setting does not change it
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+            subtitleText, SUB_AUTOFIT_MIN_DP, maxDp, 1, TypedValue.COMPLEX_UNIT_DIP
+        )
+    }
+
+    private fun subtitleRootWidth(): Int = (subtitleText.parent as? View)?.width ?: 0
+
+    @Suppress("DEPRECATION")
+    private fun realDisplayWidth(): Int {
+        val size = Point()
+        windowManager.defaultDisplay.getRealSize(size)
+        return size.x
+    }
+
+    // Keeps the subtitle box in step with the window whenever it changes size (rotation, PiP)
+    private fun watchSubtitleBox() {
+        val root = subtitleText.parent as? View ?: return
+        root.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) {
+                updateSubtitleBox(right - left, bottom - top)
+            }
+        }
+    }
+
+    private fun refreshSubtitleBox() {
+        val root = subtitleText.parent as? View ?: return
+        if (root.width > 0 && root.height > 0) updateSubtitleBox(root.width, root.height)
+    }
+
+    private fun updateSubtitleBox(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) return
+        val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
+        val small = width < realDisplayWidth() * SMALL_WINDOW_FRACTION
+        val boxWidth = (width * SUB_BOX_WIDTH_FRACTION).toInt()
+        val boxHeight = (height * SUB_BOX_HEIGHT_FRACTION).toInt()
+        val bottomMargin = if (small) {
+            (4 * resources.displayMetrics.density).toInt()
+        } else {
+            (height * SUB_BOTTOM_MARGIN_FRACTION).toInt()
+        }
+        if (params.width != boxWidth || params.height != boxHeight || params.bottomMargin != bottomMargin) {
+            params.width = boxWidth
+            params.height = boxHeight
+            params.bottomMargin = bottomMargin
+            subtitleText.layoutParams = params
+        }
+        applySubtitleSize(width)
     }
 
     private fun setSubtitleSize(newSizeDp: Int) {
         subtitleSizeDp = newSizeDp.coerceIn(SUB_SIZE_MIN, SUB_SIZE_MAX)
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit().putInt(KEY_SUB_SIZE, subtitleSizeDp).apply()
-        applySubtitleSize(isInPip())
+        applySubtitleSize()
         updateSubSizeLabel()
         showSubtitlePreview()
     }

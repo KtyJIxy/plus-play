@@ -52,11 +52,17 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - `.srt` parsing tolerates a UTF-8 byte order mark (it used to drop the first line) and
   different spacing around `-->`.
 
-### Subtitle size
-- Settings (gear icon) has a size control with -4, -1, +1 and +4 buttons; tap the label to
+### Subtitle look and size
+- White text with a black outline and no background box.
+- Settings (gear icon) has a **Size** control with -4, -1, +1 and +4 buttons; tap the label to
   reset. While you adjust it, sample text is shown if no subtitle is on screen.
+- The size is the *largest* size used. Subtitles shrink automatically so the whole text, one
+  line or several, fits in a box over the bottom quarter of the window (90% of its width), and
+  never grow past the setting.
 - The size is set in dp, so it ignores the system-wide font size setting, and it applies to
-  all videos. In picture-in-picture subtitles are drawn at 60% of the chosen size.
+  all videos.
+- In picture-in-picture the largest size is scaled down in proportion to the window width, so a
+  size chosen for full screen also suits the small window.
 
 ### Resume position
 - The position is saved however you leave: Back, closing PiP, swiping the app away, or the system
