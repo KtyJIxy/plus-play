@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@android:drawable/ic_menu_gallery"
-            android:tint="#FFA726"
+            android:tint="#26D68C"
             android:scaleType="centerCrop"
             android:contentDescription="Folder" />
 
@@ -32,7 +32,7 @@
             android:src="@android:drawable/ic_menu_gallery"
             android:background="#DDFFFFFF"
             android:padding="2dp"
-            android:tint="#FFA726"
+            android:tint="#26D68C"
             android:contentDescription="Folder indicator" />
 
         <!-- Item count badge -->

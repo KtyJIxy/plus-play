@@ -21,20 +21,19 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- Subtitle text -->
-    <TextView
+    <!-- Subtitle text: white with a black outline, no background. The player sets the size of
+         this box (a band over the bottom of the window) and the text shrinks to fit it. -->
+    <com.plusplay.app.OutlinedTextView
         android:id="@+id/subtitleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="80dp"
-        android:background="#CC000000"
-        android:padding="8dp"
+        android:padding="4dp"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:gravity="center"
+        android:gravity="center_horizontal|bottom"
         android:visibility="gone" />
 
     <!-- Control overlay -->
@@ -127,7 +126,7 @@
         <!-- Settings dropdown list -->
         <LinearLayout
             android:id="@+id/settingsDropdown"
-            android:layout_width="280dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
@@ -141,7 +140,7 @@
             <TextView
                 android:id="@+id/settingCurrentDirSubtitle"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:text="Subtitle from Current Directory"
                 android:textColor="@color/white"
                 android:textSize="14sp"
@@ -153,7 +152,7 @@
             <TextView
                 android:id="@+id/settingExternalSubtitle"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:text="External Subtitle"
                 android:textColor="@color/white"
                 android:textSize="14sp"
@@ -163,23 +162,25 @@
                 android:background="?android:attr/selectableItemBackground" />
 
             <!-- Subtitle delay: tap the label to reset -->
-            <TextView
-                android:id="@+id/subDelayLabel"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Subtitle delay: 0.0 s"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:gravity="center_vertical"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:maxLines="1"
-                android:background="?android:attr/selectableItemBackground" />
-
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/subDelayLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.6"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="4dp"
+                    android:text="Delay 0.0s"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:background="?android:attr/selectableItemBackground" />
 
                 <TextView
                     android:id="@+id/subDelayMinusBig"
@@ -189,7 +190,7 @@
                     android:gravity="center"
                     android:text="-1s"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:background="?android:attr/selectableItemBackground" />
 
                 <TextView
@@ -200,7 +201,7 @@
                     android:gravity="center"
                     android:text="-0.1s"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:background="?android:attr/selectableItemBackground" />
 
                 <TextView
@@ -211,7 +212,7 @@
                     android:gravity="center"
                     android:text="+0.1s"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:background="?android:attr/selectableItemBackground" />
 
                 <TextView
@@ -222,7 +223,74 @@
                     android:gravity="center"
                     android:text="+1s"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+            </LinearLayout>
+
+            <!-- Subtitle size (dp, independent of the system font size): tap the label to reset -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/subSizeLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.6"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="4dp"
+                    android:text="Size 16"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subSizeMinusBig"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="-4"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subSizeMinus"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="-1"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subSizePlus"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="+1"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <TextView
+                    android:id="@+id/subSizePlusBig"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="+4"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
                     android:background="?android:attr/selectableItemBackground" />
 
             </LinearLayout>
@@ -359,6 +427,25 @@
         android:contentDescription="Unlock"
         android:src="@drawable/ic_pp_lock_open"
         android:tint="@color/white"
+        android:visibility="gone" />
+
+
+    <!-- Shown briefly after playback resumes by itself; tap to start from the beginning -->
+    <TextView
+        android:id="@+id/resumeChip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="72dp"
+        android:background="@drawable/resume_chip_bg"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:textColor="@color/white"
+        android:textSize="14sp"
         android:visibility="gone" />
 
 </RelativeLayout>
