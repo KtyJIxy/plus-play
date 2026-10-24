@@ -1,4 +1,4 @@
-# Plus Play
+# PlusPlayPiP
 
 [![Build APK](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml/badge.svg)](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml)
 
@@ -7,7 +7,7 @@ A small, no-frills Android video player written in Kotlin. It plays through Andr
 
 This is a fork of [kmfoysal06/plus-play](https://github.com/kmfoysal06/plus-play), starting from
 upstream **v1.0.67**. It adds picture-in-picture, fullscreen in both orientations,
-fit/crop/stretch scaling, subtitle delay and more reliable resume.
+fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green look.
 
 ## Download
 
@@ -29,11 +29,11 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - The window takes the video's shape (Android only accepts shapes between 1:2.39 and 2.39:1).
 - Rewind 10 s, play/pause and forward 10 s buttons inside the window. Phones that allow only
   three buttons lose forward, to make room for the size button below.
-- **Window size (experimental):** a button in the PiP window cycles the window's shape through
-  the video's own shape, 2.0:1, 2.2:1 and 2.38:1. A wider shape gives a wider window, and the
-  video is cropped at the top and bottom to fill it. The choice is remembered. Android 8.0
-  also grows the window by about half while its controls are showing, so the widest shape
-  fills the screen width when you tap the window; the narrower shapes grow less.
+- **Window size (experimental):** a button in the PiP window switches between three sizes:
+  small (the video's own shape), big (2.0:1) and biggest (2.38:1). A wider shape gives a wider
+  window, and the video is cropped at the top and bottom to fill it. The choice is remembered.
+  Android 8.0 also grows the window by about half while its controls are showing, so the
+  biggest size fills the screen width when you tap the window.
 - Playback continues in the window. Tapping it returns to full screen; closing it with the
   cross closes the player and keeps the resume position.
 - Subtitles shrink to fit the window.
@@ -58,9 +58,9 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - White text with a black outline and no background box.
 - Settings (gear icon) has a **Size** control with -4, -1, +1 and +4 buttons; tap the label to
   reset. While you adjust it, sample text is shown if no subtitle is on screen.
-- The size is the *largest* size used. Subtitles shrink automatically so the whole text, one
-  line or several, fits in a box over the bottom quarter of the window (90% of its width), and
-  never grow past the setting.
+- The size is the *largest* size used. For every subtitle the app picks the biggest size at
+  which the whole text, one line or several, fits a box over the bottom quarter of the window
+  (90% of its width). Short phrases get the full size, long ones shrink to fit.
 - The size is set in dp, so it ignores the system-wide font size setting, and it applies to
   all videos.
 - In picture-in-picture the largest size is scaled down in proportion to the window width, so a
@@ -69,12 +69,15 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 ### Resume position
 - The position is saved however you leave: Back, closing PiP, swiping the app away, or the system
   killing it. It is also saved every 10 s while playing.
-- The last 30 videos are remembered (upstream: 3). Reopening a video offers "Resume" or
-  "Start from Beginning".
+- The last 30 videos are remembered (upstream: 3). Reopening a video continues from where you
+  left off, without asking; a "Start over" chip shows for a few seconds if you want the
+  beginning.
 - The first 5 s are not worth resuming, and the last 5 s count as finished. A video that plays
   to the end is forgotten.
 
 ### Smaller changes
+- Times show hours when needed (1:02:03), in the player and in the video list.
+- Green colour scheme and a new icon.
 - A message appears when a file cannot be played, instead of the player closing silently.
 
 ## What it costs
@@ -86,7 +89,9 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - **Background work:** a small preferences write every 10 s during playback, and subtitles are
   checked 4 times a second instead of twice while a subtitle file is loaded.
 - **Top bar:** two more buttons, so the video title gets less room in portrait.
-- **Testing:** built and run by hand on one phone. There are no automated tests.
+- **Testing:** unit tests cover the logic that does not need a phone (time format, subtitle
+  parsing, resume rules, subtitle size fitting) and run on every push. Everything else is tried
+  by hand on one phone.
 
 ## Limits (unchanged from upstream)
 
@@ -122,8 +127,8 @@ match `versionName` in `app/build.gradle`, and the release notes come from
 
 ```bash
 # 1. bump versionName / versionCode in app/build.gradle, add the changelog file, commit, push
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.3.0
+git push origin v1.3.0
 ```
 
 **Signing:** by default each build is signed with a throwaway key, so a new build cannot be
@@ -162,10 +167,15 @@ app/src/main/
 │   ├── MainActivity.kt        # folder and video list
 │   ├── FolderAdapter.kt       # list adapter
 │   ├── PlayerActivity.kt      # player: gestures, subtitles, PiP, resume
+│   ├── SubtitleParser.kt      # .srt reading
+│   ├── SubtitleFit.kt         # picks the subtitle size that fits
+│   ├── ResumePolicy.kt        # which saved positions are worth resuming
+│   ├── TimeFormat.kt          # M:SS / H:MM:SS
 │   ├── ScalableVideoView.kt   # VideoView with fit / crop / stretch
 │   └── VideoFile.kt           # data model
 ├── res/                       # layouts, drawables, fonts, strings
 └── AndroidManifest.xml
+app/src/test/                  # unit tests
 ```
 
 Built on core Android APIs only: `VideoView`, `MediaStore`, `RecyclerView` and `GestureDetector`.

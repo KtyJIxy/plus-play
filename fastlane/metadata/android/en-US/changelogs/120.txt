@@ -1,0 +1,5 @@
+- Subtitles now pick the biggest size that fits each phrase, in a box over the bottom quarter of the window
+- Picture-in-picture: three sizes (small, big, biggest) with clear icons
+- Playback resumes by itself, with a "Start over" chip; times show hours when needed
+- New green look and icon, app renamed PlusPlayPiP
+- First automated tests

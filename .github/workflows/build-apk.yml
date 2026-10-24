@@ -65,8 +65,27 @@ jobs:
             echo "sdkmanager not found; relying on Gradle to fetch what it needs"
           fi
 
+      - name: Run unit tests
+        run: .github/scripts/run-gradle.sh "Unit tests" testDebugUnitTest --stacktrace
+
+      - name: Summarise unit tests
+        if: always()
+        run: |
+          {
+            echo "### Unit tests"
+            echo
+            total=0; failed=0
+            for f in app/build/test-results/testDebugUnitTest/*.xml; do
+              [ -f "$f" ] || continue
+              t=$(sed -n 's/.*<testsuite [^>]*tests="\([0-9]*\)".*/\1/p' "$f" | head -1)
+              x=$(sed -n 's/.*<testsuite [^>]*failures="\([0-9]*\)".*/\1/p' "$f" | head -1)
+              total=$((total + ${t:-0})); failed=$((failed + ${x:-0}))
+            done
+            echo "$total tests, $failed failed"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: .github/scripts/run-gradle.sh "Debug build" assembleDebug --stacktrace
 
       # The release build shrinks code with R8; keep going if it fails so the debug APK is still
       # delivered (a tag build is stopped further down if the release APK is missing)

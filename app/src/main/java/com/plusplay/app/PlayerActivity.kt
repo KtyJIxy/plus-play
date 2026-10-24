@@ -23,6 +23,9 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Rational
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -43,7 +46,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.widget.TextViewCompat
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -111,6 +113,10 @@ class PlayerActivity : AppCompatActivity() {
     // PiP window shape (experimental): 0 = the video's own shape, 1..3 = wider presets;
     // remembered between sessions
     private var pipLevel = 0
+    private lateinit var resumeChip: TextView
+    private var subBoxWidth = 0
+    private var subBoxHeight = 0
+    private var shownSubtitleText: CharSequence? = null
     private var pipActive = false // True from entering PiP until the activity is resumed or stopped
     private var suppressAutoPip = false // Set while we launch another screen (e.g. subtitle picker)
     private var pipReceiver: BroadcastReceiver? = null
@@ -161,9 +167,7 @@ class PlayerActivity : AppCompatActivity() {
         private const val MAX_RECENT_VIDEOS = 30
         private const val KEY_ASPECT_MODE = "aspect_mode"
         private const val KEY_SUB_OFFSET = "sub_offset_"
-        // Positions closer than this to the start or the end are not worth resuming
-        private const val MIN_RESUME_POSITION = 5000
-        private const val END_MARGIN_MS = 5000
+        private const val RESUME_CHIP_MS = 6000L
         private const val PERIODIC_SAVE_INTERVAL = 10000L
         private const val SUB_STEP_SMALL = 100L
         private const val SUB_STEP_BIG = 1000L
@@ -189,19 +193,16 @@ class PlayerActivity : AppCompatActivity() {
         private const val PIP_PLAY_PAUSE = 2
         private const val PIP_FORWARD = 3
         private const val PIP_SIZE = 4
-        private const val KEY_PIP_WIDE = "pip_wide" // old on/off switch, kept to migrate it
-        private const val KEY_PIP_LEVEL = "pip_level"
-        // Aspect ratios (x100) of the PiP size levels; level 0 uses the video's own shape
-        private val PIP_LEVEL_RATIOS = intArrayOf(0, 200, 220, 238)
+        private const val KEY_PIP_WIDE = "pip_wide" // oldest on/off switch, kept to migrate it
+        private const val KEY_PIP_LEVEL_OLD = "pip_level" // four-level setting, migrated
+        private const val KEY_PIP_SIZE = "pip_size"
+        // Aspect ratios (x100) of the three PiP sizes; size 0 uses the video's own shape
+        private val PIP_LEVEL_RATIOS = intArrayOf(0, 200, 238)
+        private val PIP_SIZE_ICONS = intArrayOf(R.drawable.ic_pp_size_s, R.drawable.ic_pp_size_m, R.drawable.ic_pp_size_l)
+        private val PIP_SIZE_NAMES = arrayOf("small (video shape)", "big", "biggest")
         // Android only accepts PiP aspect ratios between 1:2.39 and 2.39:1
         private const val PIP_MAX_RATIO = 2.38f
     }
-    
-    data class SubtitleEntry(
-        val startTime: Long,
-        val endTime: Long,
-        val text: String
-    )
     
     data class VideoPlaybackState(
         val videoPath: String,
@@ -247,6 +248,7 @@ class PlayerActivity : AppCompatActivity() {
         videoTitle = findViewById(R.id.videoTitle)
         seekFeedback = findViewById(R.id.seekFeedback)
         subtitleText = findViewById(R.id.subtitleText)
+        resumeChip = findViewById(R.id.resumeChip)
         btnPlayPause = findViewById(R.id.btnPlayPause)
         btnCenterPlayPause = findViewById(R.id.btnCenterPlayPause)
         btnPrevious = findViewById(R.id.btnPrevious)
@@ -326,9 +328,20 @@ class PlayerActivity : AppCompatActivity() {
         btnPip.setOnClickListener { enterPip() }
         val pipPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         // The old wide switch meant the widest ratio
-        val oldWide = pipPrefs.getBoolean(KEY_PIP_WIDE, false)
-        pipLevel = pipPrefs.getInt(KEY_PIP_LEVEL, if (oldWide) PIP_LEVEL_RATIOS.size - 1 else 0)
-            .coerceIn(0, PIP_LEVEL_RATIOS.size - 1)
+        pipLevel = if (pipPrefs.contains(KEY_PIP_SIZE)) {
+            pipPrefs.getInt(KEY_PIP_SIZE, 0)
+        } else {
+            // Four sizes (video, 2.0, 2.2, 2.38) became three (video, 2.0, 2.38)
+            when {
+                pipPrefs.contains(KEY_PIP_LEVEL_OLD) -> when (pipPrefs.getInt(KEY_PIP_LEVEL_OLD, 0)) {
+                    0 -> 0
+                    1, 2 -> 1
+                    else -> 2
+                }
+                pipPrefs.getBoolean(KEY_PIP_WIDE, false) -> 2
+                else -> 0
+            }
+        }.coerceIn(0, PIP_LEVEL_RATIOS.size - 1)
         
         // Aspect mode (fit / crop / stretch), remembered between videos
         aspectMode = loadAspectMode()
@@ -479,59 +492,8 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     
-    private fun parseSubtitles(content: String): List<SubtitleEntry> {
-        val entries = mutableListOf<SubtitleEntry>()
-        // Strip a UTF-8 byte order mark, otherwise the first cue is silently dropped
-        val lines = content.removePrefix("\uFEFF").split("\n")
-        var i = 0
-        
-        while (i < lines.size) {
-            // Skip subtitle number
-            if (lines[i].trim().toIntOrNull() != null) {
-                i++
-                if (i >= lines.size) break
-                
-                // Parse time
-                val timeLine = lines[i].trim()
-                val times = timeLine.split("-->")
-                if (times.size == 2) {
-                    val startTime = parseTime(times[0].trim())
-                    val endTime = parseTime(times[1].trim())
-                    i++
-                    
-                    // Parse text
-                    val textLines = mutableListOf<String>()
-                    while (i < lines.size && lines[i].trim().isNotEmpty()) {
-                        textLines.add(lines[i].trim())
-                        i++
-                    }
-                    
-                    if (textLines.isNotEmpty()) {
-                        entries.add(SubtitleEntry(startTime, endTime, textLines.joinToString("\n")))
-                    }
-                }
-            }
-            i++
-        }
-        
-        return entries
-    }
-    
-    private fun parseTime(timeString: String): Long {
-        // Format: 00:00:00,000 or 00:00:00.000
-        val parts = timeString.replace(",", ".").split(":")
-        if (parts.size == 3) {
-            val hours = parts[0].toLongOrNull() ?: 0
-            val minutes = parts[1].toLongOrNull() ?: 0
-            val secondsParts = parts[2].split(".")
-            val seconds = secondsParts[0].toLongOrNull() ?: 0
-            val millis = if (secondsParts.size > 1) secondsParts[1].toLongOrNull() ?: 0 else 0
-            
-            return hours * 3600000 + minutes * 60000 + seconds * 1000 + millis
-        }
-        return 0
-    }
-    
+    private fun parseSubtitles(content: String): List<SubtitleEntry> = SubtitleParser.parse(content)
+
     private fun updateSubtitle() {
         // Leave the size preview alone while it is showing
         if (SystemClock.elapsedRealtime() < subtitlePreviewUntil) return
@@ -544,7 +506,7 @@ class PlayerActivity : AppCompatActivity() {
         val currentSubtitle = subtitles.find { it.startTime <= currentPosition && currentPosition <= it.endTime }
         
         if (currentSubtitle != null) {
-            subtitleText.text = currentSubtitle.text
+            setSubtitleText(currentSubtitle.text)
             subtitleText.visibility = View.VISIBLE
         } else {
             subtitleText.visibility = View.GONE
@@ -701,16 +663,17 @@ class PlayerActivity : AppCompatActivity() {
             }
             updatePipParams()
 
-            // Check for saved position and show resume dialog if needed
-            val savedPosition = getSavedPosition()
-            if (savedPosition > MIN_RESUME_POSITION && savedPosition < duration - END_MARGIN_MS) {
-                showResumeDialog(savedPosition)
+            // Pick up where the video was left off, without asking; the chip offers a way back
+            val resumeAt = ResumePolicy.startPosition(getSavedPosition(), duration)
+            if (resumeAt > 0) {
+                videoView.seekTo(resumeAt)
+                showResumeChip(resumeAt)
             } else {
-                // Start playback normally
-                mediaPlayer.start()
-                isPlaying = true
-                updatePlayPauseButton()
+                hideResumeChip()
             }
+            mediaPlayer.start()
+            isPlaying = true
+            updatePlayPauseButton()
             
             // Start updating seekbar
             handler.post(updateSeekBarRunnable)
@@ -744,12 +707,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     
-    private fun formatTime(milliseconds: Int): String {
-        val seconds = milliseconds / 1000
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-        return String.format("%02d:%02d", minutes, remainingSeconds)
-    }
+    private fun formatTime(milliseconds: Int): String = TimeFormat.format(milliseconds)
 
     private fun loadSubtitles() {
         subtitleOffsetMs = getSavedSubtitleOffset()
@@ -1038,6 +996,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             pipActive = true
+            hideResumeChip()
             videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
             hideControls()
             // With auto-enter (Android 12+) onPause runs before we know we are in PiP and
@@ -1122,13 +1081,14 @@ class PlayerActivity : AppCompatActivity() {
     private fun cyclePipSize() {
         pipLevel = (pipLevel + 1) % PIP_LEVEL_RATIOS.size
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit().putInt(KEY_PIP_LEVEL, pipLevel).apply()
+            .edit().putInt(KEY_PIP_SIZE, pipLevel).apply()
         videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
         updatePipParams()
     }
 
     private fun pipSizeTitle(): String {
-        return if (pipLevel == 0) "Size: video shape" else "Size: ${PIP_LEVEL_RATIOS[pipLevel] / 100f}:1"
+        val next = PIP_SIZE_NAMES[(pipLevel + 1) % PIP_LEVEL_RATIOS.size]
+        return "Size: ${PIP_SIZE_NAMES[pipLevel]} (tap for $next)"
     }
 
     private fun updatePipParams() {
@@ -1154,7 +1114,7 @@ class PlayerActivity : AppCompatActivity() {
                 PIP_PLAY_PAUSE
             ),
             pipAction(R.drawable.ic_pp_fast_forward, "Forward 10s", PIP_FORWARD),
-            pipAction(R.drawable.ic_pp_aspect, pipSizeTitle(), PIP_SIZE)
+            pipAction(PIP_SIZE_ICONS[pipLevel], pipSizeTitle(), PIP_SIZE)
         )
         // Phones usually allow only 3 actions: drop "forward" first so the size button fits
         val max = getMaxNumPictureInPictureActions()
@@ -1331,21 +1291,51 @@ class PlayerActivity : AppCompatActivity() {
 
     // ---- Subtitle size ----
 
-    // The size setting is the largest size used. Subtitles shrink automatically so the whole text,
-    // one line or several, fits the box over the bottom of the window, and the largest size is
-    // scaled down with the window width, so one setting suits full screen and a small PiP window.
+    // The size setting is the largest size used. For every subtitle the biggest size at which the
+    // whole text, one line or several, fits the box over the bottom of the window is chosen, so
+    // short phrases are big and long ones shrink. The largest size also scales with the window
+    // width, so one setting suits full screen and a small PiP window.
     private fun applySubtitleSize(rootWidth: Int = subtitleRootWidth()) {
-        val realWidth = realDisplayWidth()
-        val scale = if (rootWidth > 0 && realWidth > 0) {
-            minOf(1f, rootWidth.toFloat() / realWidth)
-        } else {
-            1f
+        fitSubtitle(rootWidth)
+    }
+
+    // Sets the text and re-fits it, but only when the text actually changed (called 4 times a second)
+    private fun setSubtitleText(text: CharSequence) {
+        if (text.toString() == shownSubtitleText?.toString()) return
+        shownSubtitleText = text
+        subtitleText.text = text
+        fitSubtitle()
+    }
+
+    private fun fitSubtitle(rootWidth: Int = subtitleRootWidth()) {
+        val text = subtitleText.text
+        val density = resources.displayMetrics.density
+        val availableWidth = subBoxWidth - subtitleText.paddingLeft - subtitleText.paddingRight
+        val availableHeight = subBoxHeight - subtitleText.paddingTop - subtitleText.paddingBottom
+        if (text.isNullOrEmpty() || availableWidth <= 0 || availableHeight <= 0) return
+
+        val maxDp = SubtitleFit.scaledMax(subtitleSizeDp, rootWidth, realDisplayWidth(), SUB_AUTOFIT_MIN_DP)
+        val minPx = (SUB_AUTOFIT_MIN_DP * density).roundToInt()
+        val maxPx = maxOf(minPx, (maxDp * density).roundToInt())
+        // Leave room for the outline drawn around the letters
+        val usableWidth = (availableWidth * 0.94f).toInt()
+        val usableHeight = (availableHeight * 0.94f).toInt()
+
+        val paint = TextPaint(subtitleText.paint)
+        val sizePx = SubtitleFit.largestFitting(minPx, maxPx) { px ->
+            paint.textSize = px.toFloat()
+            @Suppress("DEPRECATION")
+            val layout = StaticLayout(
+                text, paint, usableWidth, Layout.Alignment.ALIGN_CENTER, 1f, 0f, false
+            )
+            var widest = 0f
+            for (line in 0 until layout.lineCount) widest = maxOf(widest, layout.getLineWidth(line))
+            layout.height <= usableHeight && widest <= usableWidth
         }
-        val maxDp = maxOf(SUB_AUTOFIT_MIN_DP + 1, (subtitleSizeDp * scale).roundToInt())
-        // dp, not sp, so the system-wide font size setting does not change it
-        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
-            subtitleText, SUB_AUTOFIT_MIN_DP, maxDp, 1, TypedValue.COMPLEX_UNIT_DIP
-        )
+        // dp-based, so the system-wide font size setting does not change it
+        if (Math.abs(subtitleText.textSize - sizePx) > 0.5f) {
+            subtitleText.setTextSize(TypedValue.COMPLEX_UNIT_PX, sizePx.toFloat())
+        }
     }
 
     private fun subtitleRootWidth(): Int = (subtitleText.parent as? View)?.width ?: 0
@@ -1383,6 +1373,8 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             (height * SUB_BOTTOM_MARGIN_FRACTION).toInt()
         }
+        subBoxWidth = boxWidth
+        subBoxHeight = boxHeight
         if (params.width != boxWidth || params.height != boxHeight || params.bottomMargin != bottomMargin) {
             params.width = boxWidth
             params.height = boxHeight
@@ -1415,7 +1407,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun showSubtitlePreview() {
         val previewActive = SystemClock.elapsedRealtime() < subtitlePreviewUntil
         if (subtitleText.visibility != View.VISIBLE || previewActive) {
-            subtitleText.text = "Subtitle size preview"
+            setSubtitleText("Subtitle size preview")
             subtitleText.visibility = View.VISIBLE
             subtitlePreviewUntil = SystemClock.elapsedRealtime() + SUB_PREVIEW_MS
         }
@@ -1434,11 +1426,11 @@ class PlayerActivity : AppCompatActivity() {
     ): Boolean {
         if (duration <= 0 || position < 0) return false
         return when {
-            position >= duration - END_MARGIN_MS -> {
+            ResumePolicy.isFinished(position, duration) -> {
                 clearSavedPosition()
                 false
             }
-            position > MIN_RESUME_POSITION -> {
+            position > ResumePolicy.MIN_RESUME_POSITION -> {
                 savePosition(position)
                 true
             }
@@ -1502,30 +1494,24 @@ class PlayerActivity : AppCompatActivity() {
         } ?: true
     }
     
-    private fun showResumeDialog(savedPosition: Int) {
-        val formattedPosition = formatTime(savedPosition)
-        
-        AlertDialog.Builder(this)
-            .setTitle("Resume Playback")
-            .setMessage("Do you want to resume from where you left off ($formattedPosition)?")
-            .setPositiveButton("Resume") { dialog, _ ->
-                videoView.seekTo(savedPosition)
-                videoView.start()
-                isPlaying = true
-                updatePlayPauseButton()
-                dialog.dismiss()
-            }
-            .setNegativeButton("Start from Beginning") { dialog, _ ->
-                videoView.seekTo(0)
-                videoView.start()
-                isPlaying = true
-                updatePlayPauseButton()
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
+    private val hideResumeChipRunnable = Runnable { hideResumeChip() }
+
+    private fun showResumeChip(position: Int) {
+        resumeChip.text = "Resumed at ${formatTime(position)}  ·  Start over"
+        resumeChip.setOnClickListener {
+            videoView.seekTo(0)
+            hideResumeChip()
+        }
+        resumeChip.visibility = View.VISIBLE
+        handler.removeCallbacks(hideResumeChipRunnable)
+        handler.postDelayed(hideResumeChipRunnable, RESUME_CHIP_MS)
     }
-    
+
+    private fun hideResumeChip() {
+        handler.removeCallbacks(hideResumeChipRunnable)
+        resumeChip.visibility = View.GONE
+    }
+
     private fun updateRecentVideos() {
         videoPath?.let { path ->
             val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

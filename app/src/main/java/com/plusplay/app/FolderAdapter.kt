@@ -184,7 +184,7 @@ class FolderAdapter(
 
                 if (directVideo != null) {
 
-                    // Remove the orange folder-icon tint so the actual
+                    // Remove the folder-icon tint so the actual
                     // video thumbnail can be displayed.
                     holder.folderIcon.imageTintList = null
 
@@ -207,7 +207,7 @@ class FolderAdapter(
                     holder.folderIcon.setImageResource(DEFAULT_FOLDER_ICON)
 
                     holder.folderIcon.imageTintList =
-                        ColorStateList.valueOf(Color.rgb(255, 167, 38))
+                        ColorStateList.valueOf(Color.rgb(38, 214, 140))
 
                     holder.folderIcon.scaleType = ImageView.ScaleType.CENTER
                     holder.folderIcon.alpha = 1.0f
@@ -261,17 +261,7 @@ class FolderAdapter(
         notifyDataSetChanged()
     }
 
-    private fun formatDuration(milliseconds: Long): String {
-        val seconds = (milliseconds / 1000).toInt()
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-
-        return String.format(
-            "%02d:%02d",
-            minutes,
-            remainingSeconds
-        )
-    }
+    private fun formatDuration(milliseconds: Long): String = TimeFormat.format(milliseconds)
 
     /**
      * Loads the first useful frame from a video.
