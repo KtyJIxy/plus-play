@@ -1,4 +1,5 @@
-- Player settings screen: subtitle size, lines and area height, automatic resume, default scaling and PiP size
-- Subtitles adapt in full screen too (long phrases shrink to fit the allowed lines)
-- Taller subtitle area in picture-in-picture
-- Experimental tap-shrink: the PiP window no longer fills the screen width when tapped (Android 8 to 11)
+- Player settings screen: subtitle size, lines and area height, automatic resume, default scaling, orientation, PiP size
+- Subtitles adapt in full screen too (long phrases shrink to fit the allowed lines); taller area in picture-in-picture
+- Rotation is remembered per video, with an app-wide default (match the video, landscape, portrait)
+- The app opens on recently played videos
+- The subtitle file you pick is remembered for each video

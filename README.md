@@ -34,10 +34,6 @@ Every commit is also built by GitHub Actions; see [Building](#building).
   window, and the video is cropped at the top and bottom to fill it. The choice is remembered.
   Android 8.0 also grows the window by about half while its controls are showing, so the
   biggest size fills the screen width when you tap the window.
-- **Tap-shrink (experimental, Android 8 to 11):** when Android enlarges the window because you
-  tapped it, the app asks for a narrower shape so the window does not fill the screen width,
-  then restores the chosen shape after the controls fade. The system still dims the picture
-  while its controls show; apps cannot change that. Can be switched off in Player settings.
 - Playback continues in the window. Tapping it returns to full screen; closing it with the
   cross closes the player and keeps the resume position.
 - Subtitles shrink to fit the window.
@@ -75,8 +71,22 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 ### Player settings
 Main screen, settings (sliders icon), **Player settings**. They apply to every video, before any
 launch: largest subtitle size, lines allowed and area height (full screen and picture-in-picture
-separately), automatic resume on/off, default picture scaling, default picture-in-picture size
-and the tap-shrink switch below.
+separately), automatic resume on/off, default picture scaling, default picture-in-picture size,
+screen orientation, and whether the app opens on recent videos.
+
+### Orientation
+- The rotate button's choice is remembered **per video**, so a vertical video does not open
+  sideways and a wide one does not open upright. Without a choice of its own a video uses the
+  app-wide default: match the video's shape (default), landscape, portrait or follow the phone.
+
+### Recent videos
+- The app opens on the videos played last (newest first); "Recent" is also the first entry of
+  the folder list. Switch this off in Player settings.
+
+### Subtitle memory
+- The subtitle file you pick for a video is remembered (with its delay), and loaded again next
+  time. Without a pick, an `.srt` in the same folder named like the video is used
+  (`Movie.srt`, `Movie.en.srt`).
 
 ### Resume position
 - The position is saved however you leave: Back, closing PiP, swiping the app away, or the system

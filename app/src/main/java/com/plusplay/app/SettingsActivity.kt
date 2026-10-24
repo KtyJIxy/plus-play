@@ -49,10 +49,16 @@ class SettingsActivity : AppCompatActivity() {
         choice("Default picture scaling", AppSettings.KEY_ASPECT_MODE,
             listOf("FIT" to "Fit", "CROP" to "Crop", "STRETCH" to "Stretch"), "FIT")
 
+        choice("Screen orientation", AppSettings.KEY_ORIENTATION,
+            listOf("3" to "Match video", "1" to "Landscape", "2" to "Portrait", "0" to "Follow phone"), "3", asInt = true,
+            hint = "Used when a video has no choice of its own. The rotate button remembers its choice per video.")
+
         section("Picture-in-picture")
         choice("Default size", AppSettings.KEY_PIP_SIZE, listOf("0" to "Small", "1" to "Big", "2" to "Biggest"), "0", asInt = true)
-        toggle("Keep window from filling the screen on tap (experimental)", AppSettings.KEY_TAP_SHRINK, true,
-            "Android 8 enlarges the window when you tap it. This switches to a narrower shape meanwhile.")
+
+        section("Main screen")
+        toggle("Open on recently played videos", AppSettings.KEY_START_RECENT, true,
+            "Off: open on the folder list. Recent videos are always the first entry in it.")
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -131,8 +137,8 @@ class SettingsActivity : AppCompatActivity() {
         })
     }
 
-    private fun choice(label: String, key: String, options: List<Pair<String, String>>, default: String, asInt: Boolean = false) {
-        val (_, line) = row(label, null)
+    private fun choice(label: String, key: String, options: List<Pair<String, String>>, default: String, asInt: Boolean = false, hint: String? = null) {
+        val (_, line) = row(label, hint)
         val value = TextView(this).apply {
             textSize = 16f
             setTextColor(resources.getColor(R.color.colorPrimary))

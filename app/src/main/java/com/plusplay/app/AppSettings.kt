@@ -5,7 +5,8 @@ object AppSettings {
     const val PREFS_NAME = "VideoPlayerPrefs"
 
     const val KEY_AUTO_RESUME = "auto_resume"
-    const val KEY_TAP_SHRINK = "pip_tap_shrink"
+    const val KEY_ORIENTATION = "orientation_default"
+    const val KEY_START_RECENT = "start_on_recent"
     const val KEY_PIP_SIZE = "pip_size"
     const val KEY_ASPECT_MODE = "aspect_mode"
 
