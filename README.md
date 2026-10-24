@@ -34,6 +34,10 @@ Every commit is also built by GitHub Actions; see [Building](#building).
   window, and the video is cropped at the top and bottom to fill it. The choice is remembered.
   Android 8.0 also grows the window by about half while its controls are showing, so the
   biggest size fills the screen width when you tap the window.
+- **Tap-shrink (experimental, Android 8 to 11):** when Android enlarges the window because you
+  tapped it, the app asks for a narrower shape so the window does not fill the screen width,
+  then restores the chosen shape after the controls fade. The system still dims the picture
+  while its controls show; apps cannot change that. Can be switched off in Player settings.
 - Playback continues in the window. Tapping it returns to full screen; closing it with the
   cross closes the player and keeps the resume position.
 - Subtitles shrink to fit the window.
@@ -60,11 +64,19 @@ Every commit is also built by GitHub Actions; see [Building](#building).
   reset. While you adjust it, sample text is shown if no subtitle is on screen.
 - The size is the *largest* size used. For every subtitle the app picks the biggest size at
   which the whole text, one line or several, fits a box over the bottom quarter of the window
-  (90% of its width). Short phrases get the full size, long ones shrink to fit.
+  (90% of its width) and within a set number of lines (2 by default). Short phrases get the
+  full size, long ones shrink to fit. In picture-in-picture the area is taller (33%) because the
+  window is small.
 - The size is set in dp, so it ignores the system-wide font size setting, and it applies to
   all videos.
 - In picture-in-picture the largest size is scaled down in proportion to the window width, so a
   size chosen for full screen also suits the small window.
+
+### Player settings
+Main screen, settings (sliders icon), **Player settings**. They apply to every video, before any
+launch: largest subtitle size, lines allowed and area height (full screen and picture-in-picture
+separately), automatic resume on/off, default picture scaling, default picture-in-picture size
+and the tap-shrink switch below.
 
 ### Resume position
 - The position is saved however you leave: Back, closing PiP, swiping the app away, or the system

@@ -114,6 +114,18 @@ class PlayerActivity : AppCompatActivity() {
     // remembered between sessions
     private var pipLevel = 0
     private lateinit var resumeChip: TextView
+    // App-wide settings (see SettingsActivity), read when the player opens
+    private var subLinesFull = AppSettings.LINES_FULL.default
+    private var subLinesPip = AppSettings.LINES_PIP.default
+    private var subBoxFullPct = AppSettings.BOX_FULL.default
+    private var subBoxPipPct = AppSettings.BOX_PIP.default
+    private var autoResume = true
+    private var tapShrink = true
+    // Tap-shrink: the narrower shape used while Android shows the enlarged PiP window
+    private var pipTapRatio: Rational? = null
+    private var pipRestHeight = 0
+    private var pipIgnoreUntil = 0L
+    private val pipRestoreRunnable = Runnable { restorePipShape() }
     private var subBoxWidth = 0
     private var subBoxHeight = 0
     private var shownSubtitleText: CharSequence? = null
@@ -179,7 +191,6 @@ class PlayerActivity : AppCompatActivity() {
         private const val SUB_SIZE_STEP_BIG = 4
         // Subtitles are laid out in a box over the bottom of the window and shrink to fit it
         private const val SUB_BOX_WIDTH_FRACTION = 0.9f
-        private const val SUB_BOX_HEIGHT_FRACTION = 0.25f
         private const val SUB_BOTTOM_MARGIN_FRACTION = 0.04f
         private const val SUB_AUTOFIT_MIN_DP = 3
         // A window narrower than this fraction of the display counts as small (picture-in-picture)
@@ -343,6 +354,8 @@ class PlayerActivity : AppCompatActivity() {
             }
         }.coerceIn(0, PIP_LEVEL_RATIOS.size - 1)
         
+        loadAppSettings()
+
         // Aspect mode (fit / crop / stretch), remembered between videos
         aspectMode = loadAspectMode()
         videoView.mode = aspectMode
@@ -665,9 +678,11 @@ class PlayerActivity : AppCompatActivity() {
 
             // Pick up where the video was left off, without asking; the chip offers a way back
             val resumeAt = ResumePolicy.startPosition(getSavedPosition(), duration)
-            if (resumeAt > 0) {
+            if (resumeAt > 0 && autoResume) {
                 videoView.seekTo(resumeAt)
                 showResumeChip(resumeAt)
+            } else if (resumeAt > 0) {
+                showResumeOffer(resumeAt)
             } else {
                 hideResumeChip()
             }
@@ -996,6 +1011,7 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             pipActive = true
+            resetPipTapShrink()
             hideResumeChip()
             videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
             hideControls()
@@ -1013,6 +1029,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         } else {
             unregisterPipReceiver()
+            resetPipTapShrink()
             videoView.mode = aspectMode
             refreshSubtitleBox()
             if (isLocked) {
@@ -1072,6 +1089,7 @@ class PlayerActivity : AppCompatActivity() {
     // fills the screen width on a tap. The levels let you choose how wide to go; the video is
     // cropped to fill the window and is never shown narrower than its own shape.
     private fun pipAspectRatio(): Rational {
+        pipTapRatio?.let { return it }
         val ratio100 = PIP_LEVEL_RATIOS[pipLevel]
         if (ratio100 == 0) return videoAspect
         val preset = Rational(ratio100, 100)
@@ -1084,6 +1102,52 @@ class PlayerActivity : AppCompatActivity() {
             .edit().putInt(KEY_PIP_SIZE, pipLevel).apply()
         videoView.mode = if (pipLevel > 0) ScalableVideoView.Mode.CROP else ScalableVideoView.Mode.FIT
         updatePipParams()
+    }
+
+    private fun loadAppSettings() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        subLinesFull = AppSettings.LINES_FULL.clamp(prefs.getInt(AppSettings.LINES_FULL.key, AppSettings.LINES_FULL.default))
+        subLinesPip = AppSettings.LINES_PIP.clamp(prefs.getInt(AppSettings.LINES_PIP.key, AppSettings.LINES_PIP.default))
+        subBoxFullPct = AppSettings.BOX_FULL.clamp(prefs.getInt(AppSettings.BOX_FULL.key, AppSettings.BOX_FULL.default))
+        subBoxPipPct = AppSettings.BOX_PIP.clamp(prefs.getInt(AppSettings.BOX_PIP.key, AppSettings.BOX_PIP.default))
+        autoResume = prefs.getBoolean(AppSettings.KEY_AUTO_RESUME, true)
+        tapShrink = prefs.getBoolean(AppSettings.KEY_TAP_SHRINK, true)
+    }
+
+    // Experimental. Android 8.0 enlarges the PiP window while its controls show (it fills the
+    // screen width at the wide sizes). When that is seen, ask for a narrower shape so the enlarged
+    // window stays about as wide as the resting one, then go back to the chosen shape after the
+    // controls have faded. The system dims the picture while its controls show; apps cannot
+    // change that.
+    private fun onPipWindowSized(width: Int, height: Int) {
+        if (!tapShrink || pipLevel == 0 || width <= 0 || height <= 0) return
+        val now = SystemClock.elapsedRealtime()
+        if (now < pipIgnoreUntil || pipTapRatio != null) return
+        if (pipRestHeight == 0 || height < pipRestHeight) {
+            pipRestHeight = height
+        } else if (height > pipRestHeight * 1.25f) {
+            val narrowed = (pipAspectRatio().toFloat() * pipRestHeight / height).coerceIn(1.0f, PIP_MAX_RATIO)
+            pipTapRatio = Rational((narrowed * 100).toInt(), 100)
+            pipIgnoreUntil = now + 800
+            updatePipParams()
+            handler.removeCallbacks(pipRestoreRunnable)
+            handler.postDelayed(pipRestoreRunnable, 4500)
+        }
+    }
+
+    private fun restorePipShape() {
+        if (pipTapRatio == null) return
+        pipTapRatio = null
+        pipRestHeight = 0
+        pipIgnoreUntil = SystemClock.elapsedRealtime() + 800
+        updatePipParams()
+    }
+
+    private fun resetPipTapShrink() {
+        handler.removeCallbacks(pipRestoreRunnable)
+        pipTapRatio = null
+        pipRestHeight = 0
+        pipIgnoreUntil = 0L
     }
 
     private fun pipSizeTitle(): String {
@@ -1321,6 +1385,8 @@ class PlayerActivity : AppCompatActivity() {
         val usableWidth = (availableWidth * 0.94f).toInt()
         val usableHeight = (availableHeight * 0.94f).toInt()
 
+        val small = rootWidth in 1 until (realDisplayWidth() * SMALL_WINDOW_FRACTION).toInt()
+        val maxLines = if (small) subLinesPip else subLinesFull
         val paint = TextPaint(subtitleText.paint)
         val sizePx = SubtitleFit.largestFitting(minPx, maxPx) { px ->
             paint.textSize = px.toFloat()
@@ -1330,7 +1396,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             var widest = 0f
             for (line in 0 until layout.lineCount) widest = maxOf(widest, layout.getLineWidth(line))
-            layout.height <= usableHeight && widest <= usableWidth
+            layout.lineCount <= maxLines && layout.height <= usableHeight && widest <= usableWidth
         }
         // dp-based, so the system-wide font size setting does not change it
         if (Math.abs(subtitleText.textSize - sizePx) > 0.5f) {
@@ -1353,6 +1419,7 @@ class PlayerActivity : AppCompatActivity() {
         root.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) {
                 updateSubtitleBox(right - left, bottom - top)
+                if (pipActive) onPipWindowSized(right - left, bottom - top)
             }
         }
     }
@@ -1367,7 +1434,7 @@ class PlayerActivity : AppCompatActivity() {
         val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
         val small = width < realDisplayWidth() * SMALL_WINDOW_FRACTION
         val boxWidth = (width * SUB_BOX_WIDTH_FRACTION).toInt()
-        val boxHeight = (height * SUB_BOX_HEIGHT_FRACTION).toInt()
+        val boxHeight = (height * (if (small) subBoxPipPct else subBoxFullPct) / 100f).toInt()
         val bottomMargin = if (small) {
             (4 * resources.displayMetrics.density).toInt()
         } else {
@@ -1500,6 +1567,18 @@ class PlayerActivity : AppCompatActivity() {
         resumeChip.text = "Resumed at ${formatTime(position)}  ·  Start over"
         resumeChip.setOnClickListener {
             videoView.seekTo(0)
+            hideResumeChip()
+        }
+        resumeChip.visibility = View.VISIBLE
+        handler.removeCallbacks(hideResumeChipRunnable)
+        handler.postDelayed(hideResumeChipRunnable, RESUME_CHIP_MS)
+    }
+
+    // With automatic resume off: start from the beginning, and offer the saved spot
+    private fun showResumeOffer(position: Int) {
+        resumeChip.text = "Resume from ${formatTime(position)}"
+        resumeChip.setOnClickListener {
+            videoView.seekTo(position)
             hideResumeChip()
         }
         resumeChip.visibility = View.VISIBLE

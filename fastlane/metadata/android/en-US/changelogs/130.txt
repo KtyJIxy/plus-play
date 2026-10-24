@@ -1,0 +1,4 @@
+- Player settings screen: subtitle size, lines and area height, automatic resume, default scaling and PiP size
+- Subtitles adapt in full screen too (long phrases shrink to fit the allowed lines)
+- Taller subtitle area in picture-in-picture
+- Experimental tap-shrink: the PiP window no longer fills the screen width when tapped (Android 8 to 11)

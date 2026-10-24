@@ -169,6 +169,11 @@ class MainActivity : AppCompatActivity() {
             R.id.exitAppRow
         )
 
+        view.findViewById<View>(R.id.playerSettingsRow).setOnClickListener {
+            popupWindow.dismiss()
+            startActivity(android.content.Intent(this, SettingsActivity::class.java))
+        }
+
         exitRow.setOnClickListener {
 
             popupWindow.dismiss()
