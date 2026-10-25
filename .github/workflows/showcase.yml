@@ -31,6 +31,8 @@ jobs:
 
       - name: Generate sample video
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=30" \
             -f lavfi -i "sine=frequency=330:sample_rate=44100" -t 45 \
             -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest .github/showcase/sample.mp4
