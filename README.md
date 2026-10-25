@@ -18,25 +18,24 @@ fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green 
 
 ## Screenshots
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/full.gif" width="560" alt="Full screen playback with subtitles that fit each phrase">
-</p>
-<p align="center">Subtitles take the biggest size that fits each phrase</p>
+| Full screen | Picture-in-picture |
+|---|---|
+| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/full.gif" width="480" alt="Full screen playback with subtitles"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip.gif" width="190" alt="Picture-in-picture, switching its size"> |
+
+Subtitles use the size you set and shrink only when a phrase would not fit the allowed lines.
+In full screen there is plenty of room, so most phrases keep the full size on one line. In
+picture-in-picture the size scales with the small window, so the fitting is easy to see: short
+phrases stay large and longer ones shrink and wrap onto two lines.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip-sizes.png" width="720" alt="Picture-in-picture in three sizes">
 </p>
-<p align="center">Picture-in-picture: small, big and biggest, with subtitles that fit the window</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip.gif" width="220" alt="Switching the picture-in-picture size">
-</p>
-<p align="center">Switching the picture-in-picture size</p>
+<p align="center">Picture-in-picture: small, big and biggest</p>
 
 | | | |
 |---|---|---|
-| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/05-subtitle-long.png" width="330" alt="Long subtitle"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-controls.png" width="330" alt="Player controls"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="150" alt="Player settings"> |
-| Long subtitle on two lines | Player controls | Player settings |
+| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/06-subtitle-longest.png" width="330" alt="A very long subtitle on two lines"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-controls.png" width="330" alt="Player controls"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="150" alt="Player settings"> |
+| A very long subtitle on two lines | Player controls | Player settings |
 
 <sub>Sample video: <a href="https://peach.blender.org/">Big Buck Bunny</a>, © Blender Foundation, CC BY 3.0. Pictures made on an Android emulator.</sub>
 
@@ -92,8 +91,9 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - The size is the *largest* size used. For every subtitle the app picks the biggest size at
   which the whole text, one line or several, fits a box over the bottom quarter of the window
   (90% of its width) and within a set number of lines (2 by default). Short phrases get the
-  full size, long ones shrink to fit. In picture-in-picture the area is taller (33%) because the
-  window is small.
+  full size, long ones shrink to fit. In full screen most phrases fit at the set size, so the
+  fitting shows mostly in picture-in-picture, where the area is taller (33%) because the window
+  is small.
 - The size is set in dp, so it ignores the system-wide font size setting, and it applies to
   all videos.
 - In picture-in-picture the largest size is scaled down in proportion to the window width, so a
@@ -170,8 +170,6 @@ Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotat
 ## Building
 
 ### GitHub Actions
-Step by step release guide: [RELEASING.md](RELEASING.md).
-
 Every push builds a debug and a release APK (`.github/workflows/build-apk.yml`). Open the run in
 the **Actions** tab and download the artifact; the run summary lists the file sizes. New forks
 have Actions switched off until you enable them once in the **Actions** tab.
@@ -182,8 +180,8 @@ match `versionName` in `app/build.gradle`, and the release notes come from
 
 ```bash
 # 1. bump versionName / versionCode in app/build.gradle, add the changelog file, commit, push
-git tag v1.3.1
-git push origin v1.3.1
+git tag v1.3.2
+git push origin v1.3.2
 ```
 
 **Signing:** by default each build is signed with a throwaway key, so a new build cannot be

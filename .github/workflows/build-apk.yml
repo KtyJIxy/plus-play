@@ -119,7 +119,7 @@ jobs:
             ALIAS=throwaway
             keytool -genkeypair -keystore "$KS" -storetype PKCS12 -storepass "$STORE_PASS" \
               -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=Plus Play CI throwaway key"
+              -dname "CN=PlusPlayPiP CI throwaway key"
             SIGNING_NOTE="a throwaway key (uninstall the previous build before installing this one)"
             echo "STABLE_KEY=false" >> "$GITHUB_ENV"
           fi
@@ -196,6 +196,6 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          name: Plus Play ${{ env.VERSION_NAME }}
+          name: PlusPlayPiP ${{ env.VERSION_NAME }}
           body_path: ${{ runner.temp }}/release-notes.md
           files: release/plus-play-${{ env.VERSION_NAME }}.apk
