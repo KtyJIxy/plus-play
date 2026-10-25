@@ -22,8 +22,11 @@ adb shell pm grant $PKG android.permission.WRITE_EXTERNAL_STORAGE || true
 adb shell mkdir -p /sdcard/Movies/Sample
 adb push .github/showcase/sample.mp4 $VID
 adb push .github/showcase/sample.srt /sdcard/Movies/Sample/sample.srt
-adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$VID >/dev/null
-wait_ui 3
+# Make Android's media database notice the new files
+adb shell content call --uri content://media/external/file --method scan_volume --arg external_primary || true
+adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$VID >/dev/null || true
+wait_ui 8
+adb shell content query --uri content://media/external/video/media --projection _display_name:_data || true
 
 # Start recording (the emulator's recorder stops after the time limit)
 adb shell "screenrecord --time-limit 45 --size 720x1280 /sdcard/demo-portrait.mp4" &
@@ -42,7 +45,7 @@ adb shell input keyevent KEYCODE_BACK
 wait_ui 1
 
 # Play the sample video
-adb shell am start -n $PKG/.PlayerActivity --es VIDEO_PATH "$VID"
+adb shell am start -W -n $PKG/.PlayerActivity --es VIDEO_PATH "$VID" || true
 wait_ui 6
 shot 03-player-subtitle-short
 wait_ui 6
