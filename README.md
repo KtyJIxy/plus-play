@@ -169,39 +169,26 @@ Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotat
 
 ## Building
 
-### GitHub Actions
-Every push builds a debug and a release APK and runs the unit tests
-(`.github/workflows/build-apk.yml`). The APKs are attached to the run as downloadable artifacts,
-and the run summary lists their sizes and the test results. Pushing a tag such as `v1.3.1`,
-matching `versionName` in `app/build.gradle`, publishes the signed release APK as a GitHub release,
-with notes from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
-
-Forks have Actions switched off until they are enabled once in the **Actions** tab.
-
-**Signing:** without configuration each build is signed with a throwaway key, so a new build
-cannot be installed over the previous one. To get a stable signature, create a key and store it
-as the repository secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD`;
-the build then signs every APK with it.
+Requirements: the Android SDK (platform 33 and build-tools 34.0.0, both installed with Android
+Studio's SDK Manager) and a JDK between 17 and 21. The bundled Gradle 8.7 fails on newer JDKs with
+"Unsupported class file major version".
 
 ```bash
-keytool -genkeypair -keystore release.jks -alias release -keyalg RSA -keysize 2048 -validity 10000
-base64 -w0 release.jks | gh secret set KEYSTORE_BASE64
-gh secret set KEYSTORE_PASSWORD
-gh secret set KEY_ALIAS --body release
-gh secret set KEY_PASSWORD
-```
-
-Keep the key file and its passwords safe: without them, updates can only be installed after
-uninstalling the app.
-
-### Locally
-Needs the Android SDK (platform 33, build-tools 34.0.0) and a JDK between 17 and 21: the bundled
-Gradle 8.7 fails on newer JDKs with "Unsupported class file major version".
-
-```bash
+git clone https://github.com/KtyJIxy/plus-play.git
+cd plus-play
 ./gradlew assembleDebug
 # app/build/outputs/apk/debug/app-debug.apk
 ```
+
+Other useful commands:
+
+```bash
+./gradlew testDebugUnitTest   # unit tests
+./gradlew assembleRelease     # smaller, shrunk APK, unsigned: sign it with apksigner before installing
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+The project also opens directly in Android Studio.
 
 ## Project structure
 
