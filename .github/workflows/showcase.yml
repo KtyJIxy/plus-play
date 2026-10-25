@@ -32,11 +32,19 @@ jobs:
       - name: Build debug APK
         run: .github/scripts/run-gradle.sh "Debug build" assembleDebug --stacktrace
 
-      - name: Get the sample video and write its subtitles
+      - name: Restore the sample video if it was made before
+        id: sample
+        uses: actions/cache@v4
+        with:
+          path: .github/showcase/sample.mp4
+          key: bbb-sample-v1
+
+      - name: Get the sample video (Big Buck Bunny, CC BY 3.0)
+        if: steps.sample.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg bc
+          sudo apt-get install -y -qq ffmpeg
           # Big Buck Bunny, (c) Blender Foundation, Creative Commons Attribution (peach.blender.org)
           curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.zip" \
             https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4.zip
@@ -45,6 +53,10 @@ jobs:
           ffmpeg -loglevel error -ss 120 -i "$BBB" -t 120 \
             -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
             -c:a aac -b:a 96k .github/showcase/sample.mp4
+
+      - name: Write the sample subtitles and install ffmpeg
+        run: |
+          sudo apt-get install -y -qq ffmpeg bc
           python3 .github/showcase/make_srt.py .github/showcase/sample.srt
           ls -la .github/showcase
 
@@ -57,7 +69,7 @@ jobs:
       - name: Record the app on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 26
           target: google_apis
           arch: x86_64
           profile: pixel_5

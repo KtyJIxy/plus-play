@@ -23,6 +23,7 @@ adb shell mkdir -p /sdcard/Movies/Sample
 adb push .github/showcase/sample.mp4 $VID
 adb push .github/showcase/sample.srt /sdcard/Movies/Sample/sample.srt
 adb shell content call --uri content://media/external/file --method scan_volume --arg external_primary || true
+adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$VID >/dev/null || true
 sleep 8
 
 # Main list and settings
