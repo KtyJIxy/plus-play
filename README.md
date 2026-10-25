@@ -1,6 +1,13 @@
+<p align="center">
+  <img src="app/src/main/ic_launcher-playstore.png" width="128" alt="PlusPlayPiP icon">
+</p>
+
 # PlusPlayPiP
 
 [![Build APK](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml/badge.svg)](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml)
+[![Release](https://img.shields.io/github/v/release/KtyJIxy/plus-play)](https://github.com/KtyJIxy/plus-play/releases/latest)
+[![Android 5.0+](https://img.shields.io/badge/Android-5.0%2B-3ddc84)](#download)
+[![License: MIT](https://img.shields.io/github/license/KtyJIxy/plus-play)](LICENSE)
 
 A small, no-frills Android video player written in Kotlin. It plays through Android's built-in
 `MediaPlayer`, with no extra libraries beyond AndroidX, so the app stays light.
@@ -139,6 +146,8 @@ Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotat
 ## Building
 
 ### GitHub Actions
+Step by step release guide: [RELEASING.md](RELEASING.md).
+
 Every push builds a debug and a release APK (`.github/workflows/build-apk.yml`). Open the run in
 the **Actions** tab and download the artifact; the run summary lists the file sizes. New forks
 have Actions switched off until you enable them once in the **Actions** tab.
@@ -149,8 +158,8 @@ match `versionName` in `app/build.gradle`, and the release notes come from
 
 ```bash
 # 1. bump versionName / versionCode in app/build.gradle, add the changelog file, commit, push
-git tag v1.3.0
-git push origin v1.3.0
+git tag v1.3.1
+git push origin v1.3.1
 ```
 
 **Signing:** by default each build is signed with a throwaway key, so a new build cannot be

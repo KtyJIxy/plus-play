@@ -1,0 +1,19 @@
+1
+00:00:02,000 --> 00:00:06,000
+Short line
+
+2
+00:00:07,000 --> 00:00:12,000
+A medium length phrase that fits on one line
+
+3
+00:00:13,000 --> 00:00:19,000
+A much longer phrase that needs two lines, because it keeps going on and on and on
+
+4
+00:00:20,000 --> 00:00:28,000
+And an even longer one, the kind that shows how the size shrinks so that the whole text still fits in the area at the bottom of the window without covering the picture
+
+5
+00:00:29,000 --> 00:00:36,000
+Back to something short
