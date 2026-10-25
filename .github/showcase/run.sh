@@ -72,8 +72,8 @@ for size in big biggest; do
   tap "$X" "$Y"
   sleep 2
   shot "pip-menu-$size"
-  read -r SX SY < <(python3 $H pip-size-button)
-  tap "$SX" "$SY"
+  # Same as pressing the size button in the window (the player listens for that broadcast)
+  adb shell am broadcast -a com.plusplay.app.PIP_CONTROL -p $PKG --ei pip_control 4 >/dev/null
   sleep 5
   shot "09-pip-$size"
   sleep 4
