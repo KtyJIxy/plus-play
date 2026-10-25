@@ -16,6 +16,8 @@ adb wait-for-device
 adb root >/dev/null 2>&1 || true
 adb wait-for-device
 adb shell settings put system accelerometer_rotation 0
+# no "Viewing full screen" popup over the player
+adb shell settings put secure immersive_mode_confirmations confirmed
 adb install -r -g "$APK"
 adb shell pm grant $PKG android.permission.READ_EXTERNAL_STORAGE || true
 
