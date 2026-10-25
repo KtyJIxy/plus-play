@@ -1,6 +1,13 @@
+<p align="center">
+  <img src="app/src/main/ic_launcher-playstore.png" width="128" alt="PlusPlayPiP icon">
+</p>
+
 # PlusPlayPiP
 
 [![Build APK](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml/badge.svg)](https://github.com/KtyJIxy/plus-play/actions/workflows/build-apk.yml)
+[![Release](https://img.shields.io/github/v/release/KtyJIxy/plus-play)](https://github.com/KtyJIxy/plus-play/releases/latest)
+[![Android 5.0+](https://img.shields.io/badge/Android-5.0%2B-3ddc84)](#download)
+[![License: MIT](https://img.shields.io/github/license/KtyJIxy/plus-play)](LICENSE)
 
 A small, no-frills Android video player written in Kotlin. It plays through Android's built-in
 `MediaPlayer`, with no extra libraries beyond AndroidX, so the app stays light.
@@ -8,6 +15,29 @@ A small, no-frills Android video player written in Kotlin. It plays through Andr
 This is a fork of [kmfoysal06/plus-play](https://github.com/kmfoysal06/plus-play), starting from
 upstream **v1.0.67**. It adds picture-in-picture, fullscreen in both orientations,
 fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green look.
+
+## Screenshots
+
+| Full screen | Picture-in-picture |
+|---|---|
+| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/full.gif" width="480" alt="Full screen playback with subtitles"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip.gif" width="190" alt="Picture-in-picture, switching its size"> |
+
+Subtitles use the size you set and shrink only when a phrase would not fit the allowed lines.
+In full screen there is plenty of room, so most phrases keep the full size on one line. In
+picture-in-picture the size scales with the small window, so the fitting is easy to see: short
+phrases stay large and longer ones shrink and wrap onto two lines.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip-sizes.png" width="720" alt="Picture-in-picture in three sizes">
+</p>
+<p align="center">Picture-in-picture: small, big and biggest</p>
+
+| | | |
+|---|---|---|
+| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/06-subtitle-longest.png" width="330" alt="A very long subtitle on two lines"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-controls.png" width="330" alt="Player controls"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="150" alt="Player settings"> |
+| A very long subtitle on two lines | Player controls | Player settings |
+
+<sub>Sample video: <a href="https://peach.blender.org/">Big Buck Bunny</a>, © Blender Foundation, CC BY 3.0. Pictures made on an Android emulator.</sub>
 
 ## Download
 
@@ -61,8 +91,9 @@ Every commit is also built by GitHub Actions; see [Building](#building).
 - The size is the *largest* size used. For every subtitle the app picks the biggest size at
   which the whole text, one line or several, fits a box over the bottom quarter of the window
   (90% of its width) and within a set number of lines (2 by default). Short phrases get the
-  full size, long ones shrink to fit. In picture-in-picture the area is taller (33%) because the
-  window is small.
+  full size, long ones shrink to fit. In full screen most phrases fit at the set size, so the
+  fitting shows mostly in picture-in-picture, where the area is taller (33%) because the window
+  is small.
 - The size is set in dp, so it ignores the system-wide font size setting, and it applies to
   all videos.
 - In picture-in-picture the largest size is scaled down in proportion to the window width, so a
@@ -138,48 +169,26 @@ Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotat
 
 ## Building
 
-### GitHub Actions
-Every push builds a debug and a release APK (`.github/workflows/build-apk.yml`). Open the run in
-the **Actions** tab and download the artifact; the run summary lists the file sizes. New forks
-have Actions switched off until you enable them once in the **Actions** tab.
-
-**Releases:** pushing a tag publishes the signed release APK as a GitHub release. The tag must
-match `versionName` in `app/build.gradle`, and the release notes come from
-`fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`:
+Requirements: the Android SDK (platform 33 and build-tools 34.0.0, both installed with Android
+Studio's SDK Manager) and a JDK between 17 and 21. The bundled Gradle 8.7 fails on newer JDKs with
+"Unsupported class file major version".
 
 ```bash
-# 1. bump versionName / versionCode in app/build.gradle, add the changelog file, commit, push
-git tag v1.3.0
-git push origin v1.3.0
-```
-
-**Signing:** by default each build is signed with a throwaway key, so a new build cannot be
-installed over the previous one (uninstall first, which also clears saved positions). To make
-every build and release install over the last one, create a key once and add it as repository
-secrets. Run this inside a clone of the repository, and keep the `.jks` file and its passwords
-safe: if you lose them, everyone has to uninstall before updating.
-
-```bash
-keytool -genkeypair -keystore plusplay-release.jks -alias plusplay \
-        -keyalg RSA -keysize 2048 -validity 10000
-base64 -w0 plusplay-release.jks | gh secret set KEYSTORE_BASE64
-gh secret set KEYSTORE_PASSWORD     # prompts for the password
-gh secret set KEY_ALIAS --body plusplay
-gh secret set KEY_PASSWORD          # prompts; the same password is fine
-```
-
-To make CI builds install over APKs you compile locally instead, use your local debug key
-(`~/.android/debug.keystore`, alias `androiddebugkey`, password `android`). That password is
-public, so it is fine for testing but not a secure release key.
-
-### Locally
-Needs the Android SDK (platform 33, build-tools 34.0.0) and a JDK between 17 and 21: the bundled
-Gradle 8.7 fails on newer JDKs with "Unsupported class file major version".
-
-```bash
+git clone https://github.com/KtyJIxy/plus-play.git
+cd plus-play
 ./gradlew assembleDebug
 # app/build/outputs/apk/debug/app-debug.apk
 ```
+
+Other useful commands:
+
+```bash
+./gradlew testDebugUnitTest   # unit tests
+./gradlew assembleRelease     # smaller, shrunk APK, unsigned: sign it with apksigner before installing
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+The project also opens directly in Android Studio.
 
 ## Project structure
 

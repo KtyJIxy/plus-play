@@ -1,0 +1,2 @@
+- App title on the main screen and in dialogs is now PlusPlayPiP
+- Release pages are named PlusPlayPiP

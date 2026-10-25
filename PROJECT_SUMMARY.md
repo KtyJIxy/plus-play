@@ -1,4 +1,4 @@
-# Plus Play - Project Summary
+# PlusPlayPiP - Project Summary
 
 ## ✅ Completed Implementation
 

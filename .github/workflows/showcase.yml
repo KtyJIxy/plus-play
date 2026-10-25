@@ -1,0 +1,121 @@
+name: Showcase
+
+# Starts an Android emulator on GitHub's servers, plays a generated sample video and records
+# screenshots and a short screen video of the app. Run it by hand from the Actions tab
+# (Showcase, Run workflow); the files are in the run's Artifacts. Nothing from a personal phone
+# or library is shown.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [showcase]
+    paths:
+      - .github/workflows/showcase.yml
+      - .github/showcase/**
+
+permissions:
+  contents: write # only used to publish the pictures to the showcase-media branch
+
+jobs:
+  showcase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Build debug APK
+        run: .github/scripts/run-gradle.sh "Debug build" assembleDebug --stacktrace
+
+      - name: Restore the sample video if it was made before
+        id: sample
+        uses: actions/cache@v4
+        with:
+          path: .github/showcase/sample.mp4
+          key: bbb-sample-v1
+
+      - name: Get the sample video (Big Buck Bunny, CC BY 3.0)
+        if: steps.sample.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          # Big Buck Bunny, (c) Blender Foundation, Creative Commons Attribution (peach.blender.org)
+          curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.zip" \
+            https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4.zip
+          unzip -o -q "$RUNNER_TEMP/bbb.zip" -d "$RUNNER_TEMP/bbb"
+          BBB=$(ls "$RUNNER_TEMP"/bbb/*.mp4 | head -1)
+          ffmpeg -loglevel error -ss 120 -i "$BBB" -t 120 \
+            -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
+            -c:a aac -b:a 96k .github/showcase/sample.mp4
+
+      - name: Write the sample subtitles and install ffmpeg
+        run: |
+          sudo apt-get install -y -qq ffmpeg bc
+          python3 .github/showcase/make_srt.py .github/showcase/sample.srt
+          ls -la .github/showcase
+
+      - name: Allow hardware acceleration for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Record the app on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 26
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash .github/showcase/run.sh app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Make animated pictures for the README
+        if: always()
+        run: |
+          cd showcase-out
+          for name in full pip; do
+            [ -f "$name.mp4" ] || continue
+            w=640; [ "$name" = pip ] && w=300
+            ffmpeg -loglevel error -y -i "$name.mp4" \
+              -vf "fps=10,scale=$w:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
+              "$name.gif"
+          done
+          # the three picture-in-picture sizes side by side (bottom part of the screen)
+          if [ -f 08b-pip-small.png ] && [ -f 09b-pip-big.png ] && [ -f 09b-pip-biggest.png ]; then
+            ffmpeg -loglevel error -y -i 08b-pip-small.png -i 09b-pip-big.png -i 09b-pip-biggest.png \
+              -filter_complex "[0]crop=1080:1000:0:1340[a];[1]crop=1080:1000:0:1340[b];[2]crop=1080:1000:0:1340[c];[a][b][c]hstack=inputs=3,scale=1620:-1" pip-sizes.png || true
+          fi
+          ls -la
+
+      - name: Upload screenshots and video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: showcase-${{ github.run_number }}
+          path: showcase-out/*
+          retention-days: 30
+          if-no-files-found: warn
+
+      # Also keep the newest pictures on their own branch so they can be linked from the README
+      - name: Publish to the showcase-media branch
+        if: always() && hashFiles('showcase-out/*.png') != ''
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/media"
+          cp showcase-out/*.png "$RUNNER_TEMP/media/"
+          cp showcase-out/*.gif showcase-out/*.mp4 showcase-out/logcat.txt showcase-out/diag.txt "$RUNNER_TEMP/media/" 2>/dev/null || true
+          cd "$RUNNER_TEMP/media"
+          git init -q -b showcase-media
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Showcase pictures from run ${GITHUB_RUN_NUMBER}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" showcase-media

@@ -64,3 +64,5 @@ fdroiddata/
 keystore_base64.txt
 *.keystore
 .agents/
+__pycache__/
+*.pyc
