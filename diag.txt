@@ -1,0 +1,44 @@
+== menu-big
+      intent={flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity}
+      realActivity=com.plusplay.app/.PlayerActivity
+      Activities=[ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}]
+      * Hist #0: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+          Intent { flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity (has extras) }
+          realActivity=com.plusplay.app/.PlayerActivity
+    mResumedActivity: ActivityRecord{786183c u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t5}
+    mLastPausedActivity: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+--------- beginning of main
+--------- beginning of system
+== after-size-big
+      intent={flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity}
+      realActivity=com.plusplay.app/.PlayerActivity
+      Activities=[ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}]
+      * Hist #0: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+          Intent { flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity (has extras) }
+          realActivity=com.plusplay.app/.PlayerActivity
+    mResumedActivity: ActivityRecord{786183c u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t5}
+    mLastPausedActivity: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+--------- beginning of main
+--------- beginning of system
+== menu-biggest
+      intent={flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity}
+      realActivity=com.plusplay.app/.PlayerActivity
+      Activities=[ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}, ActivityRecord{9d18dd9 u0 com.android.systemui/.pip.phone.PipMenuActivity t7}]
+      * Hist #0: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+          Intent { flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity (has extras) }
+          realActivity=com.plusplay.app/.PlayerActivity
+    mResumedActivity: ActivityRecord{9d18dd9 u0 com.android.systemui/.pip.phone.PipMenuActivity t7}
+    mLastPausedActivity: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+--------- beginning of main
+--------- beginning of system
+== after-size-biggest
+      intent={flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity}
+      realActivity=com.plusplay.app/.PlayerActivity
+      Activities=[ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}]
+      * Hist #0: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+          Intent { flg=0x10000000 cmp=com.plusplay.app/.PlayerActivity (has extras) }
+          realActivity=com.plusplay.app/.PlayerActivity
+    mResumedActivity: ActivityRecord{786183c u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t5}
+    mLastPausedActivity: ActivityRecord{fade585 u0 com.plusplay.app/.PlayerActivity t7}
+--------- beginning of main
+--------- beginning of system

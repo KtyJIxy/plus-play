@@ -1,0 +1,421 @@
+--------- beginning of main
+10-25 16:14:41.802  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger expire 1 line
+10-25 16:14:41.804  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:41.806  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:41.814  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:41.843  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:41.855  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:41.887  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:41.971  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 6 lines
+10-25 16:14:42.007  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.043  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.054  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.067  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.097  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.128  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.136  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.210  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:42.221  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.246  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.247  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.293  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.300  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.316  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.339  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.358  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.376  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.383  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.420  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.442  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.470  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.473  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.505  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.537  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.548  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.555  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.590  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.614  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.630  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.636  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.667  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.673  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.702  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.710  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.743  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.755  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.782  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.786  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:42.817  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.839  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:42.862  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.945  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 6 lines
+10-25 16:14:42.975  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:42.975  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.023  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.033  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:43.071  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.106  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.112  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.119  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:43.150  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.184  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.192  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.200  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:43.230  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.236  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.274  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.275  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:43.280  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.317  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.328  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.365  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.366  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.366  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.443  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 4 lines
+10-25 16:14:43.453  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.476  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.487  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.525  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:43.527  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.562  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.569  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.609  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:43.639  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.680  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.690  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.728  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:43.761  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.761  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.767  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.777  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.803  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.815  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.867  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:43.897  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.901  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.935  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.936  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:43.938  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.967  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:43.978  2578  2578 I MicroDetectionWorker: #updateMicroDetector [detectionMode: [mDetectionMode: [1]]]
+10-25 16:14:43.979  2578  2578 I MicroDetectionWorker: #startMicroDetector [speakerMode: 0]
+10-25 16:14:43.979  2578  2578 I AudioController: Using mInputStreamFactoryBuilder
+10-25 16:14:43.985  2578  2679 I MicroRecognitionRunner: Starting detection.
+10-25 16:14:43.986  2578  2711 I MicrophoneInputStream: mic_starting com.google.android.apps.gsa.staticplugins.aa.c@aeecf89
+10-25 16:14:43.987  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:43.990  2578  2578 I MicroDetectionWorker: onReady
+10-25 16:14:43.996  1511  8437 I AudioFlinger: AudioFlinger's thread 0xee283c00 tid=8437 ready to run
+10-25 16:14:44.009  2578  2711 I MicrophoneInputStream: mic_started com.google.android.apps.gsa.staticplugins.aa.c@aeecf89
+10-25 16:14:44.014  2578  2578 I MicroDetectionWorker: onReady
+10-25 16:14:44.018  2578  2711 I MicrophoneInputStream: mic_close com.google.android.apps.gsa.staticplugins.aa.c@aeecf89
+10-25 16:14:44.027  2578  2679 I MicroRecognitionRunner: Detection finished
+10-25 16:14:44.027  2578  2679 W ErrorReporter: reportError [type: 211, code: 524300]: Error reading from input stream
+10-25 16:14:44.027  2578  2911 I MicroRecognitionRunner: Stopping hotword detection.
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: onFatalError, processing error from engine(4)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: com.google.android.apps.gsa.shared.speech.b.g: Error reading from input stream
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.staticplugins.recognizer.j.a.a(SourceFile:28)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.staticplugins.recognizer.j.b.run(SourceFile:15)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:457)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.shared.util.concurrent.a.ax.run(SourceFile:14)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.shared.util.concurrent.a.bl.run(SourceFile:4)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.shared.util.concurrent.a.bl.run(SourceFile:4)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1162)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:636)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.lang.Thread.run(Thread.java:764)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.shared.util.concurrent.a.ai.run(SourceFile:6)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: Caused by: com.google.android.apps.gsa.shared.exception.GsaIOException: Error code: 393238 | Buffer overflow, no available space.
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.speech.audio.Tee.f(SourceFile:103)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.speech.audio.au.read(SourceFile:2)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at java.io.InputStream.read(InputStream.java:101)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.speech.audio.ao.run(SourceFile:18)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	at com.google.android.apps.gsa.speech.audio.an.run(SourceFile:2)
+10-25 16:14:44.028  2578  2679 W ErrorProcessor: 	... 9 more
+10-25 16:14:44.028  2578  2679 I AudioController: internalShutdown
+10-25 16:14:44.029  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.029  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:44.030  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.068  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.075  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.079  2578  2589 I zygote  : Background concurrent copying GC freed 13464(818KB) AllocSpace objects, 11(4MB) LOS objects, 50% free, 4MB/9MB, paused 14.574ms total 93.411ms
+10-25 16:14:44.085  2578  2578 I MicroDetector: Keeping mic open: false
+10-25 16:14:44.085  2578  2578 I MicroDetectionWorker: #onError(false)
+10-25 16:14:44.085  2578  2741 I DeviceStateChecker: DeviceStateChecker cancelled
+10-25 16:14:44.115  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.191  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:44.193  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.224  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.236  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.279  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:44.286  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.321  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.322  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.360  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:44.395  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.431  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.441  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.443  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:44.484  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.510  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.519  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.530  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:44.557  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.590  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.598  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.604  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:44.636  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.676  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.682  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.685  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:44.692  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.727  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.735  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.766  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:44.780  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.813  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.819  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.853  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.859  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.941  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:44.956  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:44.984  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:44.989  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.021  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.028  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.068  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.072  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.112  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:45.146  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.170  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.180  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.182  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.219  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.257  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.258  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+--------- beginning of system
+10-25 16:14:38.918  2578  2711 I chatty  : uid=10030(u0_a30) UserFacing2 expire 3 lines
+10-25 16:14:44.011  2578  2711 E ActivityThread: Failed to find provider info for com.google.android.apps.gsa.testing.ui.audio.recorded
+10-25 16:14:45.315  1604  1668 E BatteryStatsService: modem info is invalid: ModemActivityInfo{ mTimestamp=0 mSleepTimeMs=0 mIdleTimeMs=0 mTxTimeMs[]=[0, 0, 0, 0, 0] mRxTimeMs=0 mEnergyUsed=0}
+10-25 16:14:45.317  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:45.357  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.357  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.367  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.369  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:45.401  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.424  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.454  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.460  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.496  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.511  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.543  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.547  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.589  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.600  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.626  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.636  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.667  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.694  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.709  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.722  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.751  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.775  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.794  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.807  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.836  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.854  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.875  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.881  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.907  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.934  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:45.950  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:45.960  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:45.996  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.007  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.036  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.122  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 6 lines
+10-25 16:14:46.150  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.154  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.192  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.192  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:46.194  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.241  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.242  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.278  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:46.290  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.319  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.329  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.363  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:46.366  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.398  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.403  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.449  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:46.493  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.494  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.527  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.527  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:46.530  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.563  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.573  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.605  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:46.607  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.637  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.646  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.686  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:46.703  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.728  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.737  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.774  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:46.781  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.790  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.813  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.841  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:46.860  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.942  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:46.964  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:46.997  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.003  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.049  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:47.077  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.121  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.129  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.201  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:47.206  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.228  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.246  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.287  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:47.291  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.292  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.297  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.332  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.359  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.376  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.381  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.409  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.439  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.456  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.475  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.512  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.515  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.552  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.558  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.588  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.596  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.628  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.634  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.669  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.676  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.708  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.795  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 6 lines
+10-25 16:14:47.827  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.828  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.866  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.868  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.905  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.935  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:47.944  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:47.946  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:47.980  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.014  1399  1427 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.023  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.031  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:48.069  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.097  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.109  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.182  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 5 lines
+10-25 16:14:48.196  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.226  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.229  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.275  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:48.306  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.349  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.352  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.361  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:48.397  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.404  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.434  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.435  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:48.437  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.472  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.472  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.512  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 3 lines
+10-25 16:14:48.546  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.570  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.587  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.596  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 2 lines
+10-25 16:14:48.625  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.657  1399  2059 E SurfaceFlinger: ro.sf.lcd_density must be defined as a build property
+10-25 16:14:48.663  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.670  1399  1399 I chatty  : uid=1000(system) /system/bin/surfaceflinger identical 1 line
+10-25 16:14:48.676  1399  1399 D EGL_emulation: eglMakeCurrent: 0x7300faa47280: ver 3 0 (tinfo 0x7300faa2e840)
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 4
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 5
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 6
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 7
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 8
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 9
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 10
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 11
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 12
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 13
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 14
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 15
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 16
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 17
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 18
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 19
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 20
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 21
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 22
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 23
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 24
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 25
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 26
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 27
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 28
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 29
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 30
+10-25 16:14:48.682  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 31
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 32
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 33
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 34
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 35
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 36
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 37
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 38
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 39
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 40
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 41
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 42
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 43
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 44
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 45
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 46
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 47
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 48
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 49
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 50
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 51
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 52
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 53
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 54
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 55
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 56
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 57
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 58
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 59
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 60
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 61
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 62
+10-25 16:14:48.683  1543  1611 W GraphicBufferSource: releasing an unpopulated slot: 63
+10-25 16:14:48.770  6305  6305 D MPEG4Writer: Video track stopping. Stop source
+10-25 16:14:48.771  6305  6305 D MPEG4Writer: Video track source stopping
+10-25 16:14:48.771  6305  6305 D MPEG4Writer: Video track source stopped
+10-25 16:14:48.771  6305  6327 I MPEG4Writer: Received total/0-length (596/0) buffers and encoded 596 frames. - Video
+10-25 16:14:48.775  6305  6305 D MPEG4Writer: Video track stopped. Stop source
+10-25 16:14:48.775  6305  6305 D MPEG4Writer: Stopping writer thread
+10-25 16:14:48.775  6305  6326 D MPEG4Writer: 0 chunks are written in the last batch
+10-25 16:14:48.775  6305  6305 D MPEG4Writer: Writer thread stopped
+10-25 16:14:48.776  6305  6305 I MPEG4Writer: The mp4 file will not be streamable.
+10-25 16:14:48.789  6305  6305 D MPEG4Writer: Video track stopping. Stop source
+10-25 16:14:48.826  2983  2983 D MediaScannerReceiver: action: android.intent.action.MEDIA_SCANNER_SCAN_FILE path: /storage/emulated/0/pip.mp4
+10-25 16:14:48.837  6305  6305 D ScreenRecord: success
