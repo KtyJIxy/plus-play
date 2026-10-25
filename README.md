@@ -18,17 +18,27 @@ fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green 
 
 ## Screenshots
 
-Made automatically on an Android emulator with a generated sample video, so no personal files
-are shown (the "Showcase" workflow in the Actions tab remakes them).
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/full.gif" width="560" alt="Full screen playback with subtitles that fit each phrase">
+</p>
+<p align="center">Subtitles take the biggest size that fits each phrase</p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/05-player-subtitle-long.png" width="520" alt="A long subtitle shrunk to fit two lines">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/06-controls.png" width="520" alt="Player controls">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip-sizes.png" width="720" alt="Picture-in-picture in three sizes">
 </p>
+<p align="center">Picture-in-picture: small, big and biggest, with subtitles that fit the window</p>
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="240" alt="Player settings">
-  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-pip.png" width="240" alt="Picture-in-picture window">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip.gif" width="220" alt="Switching the picture-in-picture size">
 </p>
+<p align="center">Switching the picture-in-picture size from the window itself</p>
+
+| | | |
+|---|---|---|
+| <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/05-subtitle-long.png" width="330" alt="Long subtitle"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-controls.png" width="330" alt="Player controls"> | <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="150" alt="Player settings"> |
+| Long subtitle on two lines | Player controls | Player settings |
+
+<sub>Sample video: <a href="https://peach.blender.org/">Big Buck Bunny</a>, © Blender Foundation, CC BY 3.0. Pictures made on an Android emulator.</sub>
 
 ## Download
 

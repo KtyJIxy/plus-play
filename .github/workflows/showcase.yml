@@ -76,6 +76,11 @@ jobs:
               -vf "fps=10,scale=$w:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
               "$name.gif"
           done
+          # the three picture-in-picture sizes side by side (bottom part of the screen)
+          if [ -f 08b-pip-small.png ] && [ -f 09b-pip-big.png ] && [ -f 09b-pip-biggest.png ]; then
+            ffmpeg -loglevel error -y -i 08b-pip-small.png -i 09b-pip-big.png -i 09b-pip-biggest.png \
+              -filter_complex "[0]crop=1080:1000:0:1000[a];[1]crop=1080:1000:0:1000[b];[2]crop=1080:1000:0:1000[c];[a][b][c]hstack=inputs=3,scale=1620:-1" pip-sizes.png || true
+          fi
           ls -la
 
       - name: Upload screenshots and video

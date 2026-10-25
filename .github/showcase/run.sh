@@ -72,11 +72,8 @@ for size in big biggest; do
   tap "$X" "$Y"
   sleep 2
   shot "pip-menu-$size"
-  if read -r SX SY < <(python3 $H find "Size:"); then
-    tap "$SX" "$SY"
-  else
-    echo "size button not found"
-  fi
+  read -r SX SY < <(python3 $H pip-size-button)
+  tap "$SX" "$SY"
   sleep 5
   shot "09-pip-$size"
   sleep 4
