@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Runs inside the emulator job: installs the app, plays a generated sample video and records
-# screenshots and a short screen video into showcase-out/.
+# Runs inside the emulator job: installs the app, plays the sample video and records screenshots
+# and two short screen recordings (full screen, and picture-in-picture in all three sizes).
 set -uo pipefail
 APK="$1"
 OUT=showcase-out
+H=.github/showcase/helper.py
 mkdir -p "$OUT"
 PKG=com.plusplay.app
 VID=/sdcard/Movies/Sample/sample.mp4
 
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
-wait_ui() { sleep "${1:-2}"; }
+tap() { adb shell input tap "$1" "$2"; }
 
 adb wait-for-device
 adb root >/dev/null 2>&1 || true
@@ -17,53 +18,72 @@ adb wait-for-device
 adb shell settings put system accelerometer_rotation 0
 adb install -r -g "$APK"
 adb shell pm grant $PKG android.permission.READ_EXTERNAL_STORAGE || true
-adb shell pm grant $PKG android.permission.WRITE_EXTERNAL_STORAGE || true
 
 adb shell mkdir -p /sdcard/Movies/Sample
 adb push .github/showcase/sample.mp4 $VID
 adb push .github/showcase/sample.srt /sdcard/Movies/Sample/sample.srt
-# Make Android's media database notice the new files
 adb shell content call --uri content://media/external/file --method scan_volume --arg external_primary || true
-adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$VID >/dev/null || true
-wait_ui 8
-adb shell content query --uri content://media/external/video/media --projection _display_name:_data || true
+sleep 8
 
-# Start recording (the emulator's recorder stops after the time limit)
-adb shell "screenrecord --time-limit 45 --size 720x1280 /sdcard/demo-portrait.mp4" &
-REC=$!
-
-# Main list (opens on the Recent / folder list)
+# Main list and settings
 adb shell am start -n $PKG/.MainActivity
-wait_ui 5
+sleep 5
 shot 01-main
-
-# Player settings screen
 adb shell am start -n $PKG/.SettingsActivity
-wait_ui 3
+sleep 3
 shot 02-settings
 adb shell input keyevent KEYCODE_BACK
-wait_ui 1
+sleep 1
 
-# Play the sample video
+# Part 1: full screen (landscape), subtitles of different lengths, then the controls.
+# Shots are timed to the subtitle schedule (short, medium, long, longest).
+at() { # seconds since the video started
+  local now target
+  now=$(date +%s.%N); target=$(echo "$T0 + $1" | bc -l)
+  local wait; wait=$(echo "$target - $now" | bc -l)
+  if (( $(echo "$wait > 0" | bc -l) )); then sleep "$wait"; fi
+}
 adb shell am start -W -n $PKG/.PlayerActivity --es VIDEO_PATH "$VID" || true
-wait_ui 6
-shot 03-player-subtitle-short
-wait_ui 6
-shot 04-player-subtitle-medium
-wait_ui 7
-shot 05-player-subtitle-long
-
-# Controls (tap the middle of the screen)
-adb shell input tap 1170 540
-wait_ui 1
-shot 06-controls
-
-# Picture-in-picture: Home gesture
-adb shell input keyevent KEYCODE_HOME
-wait_ui 3
-shot 07-pip
-
+T0=$(date +%s.%N)
+sleep 1
+adb shell "screenrecord --time-limit 34 /sdcard/full.mp4" &
+REC=$!
+at 3.3;  shot 03-subtitle-short
+at 8.5;  shot 04-subtitle-medium
+at 15;   shot 05-subtitle-long
+at 22;   shot 06-subtitle-longest
+at 26;   tap 1170 540
+at 27.5; shot 07-controls
+at 31;   tap 1170 540
 wait "$REC" 2>/dev/null || true
-adb pull /sdcard/demo-portrait.mp4 "$OUT/demo.mp4" || true
-adb logcat -d -t 300 > "$OUT/logcat.txt" || true
+adb pull /sdcard/full.mp4 "$OUT/full.mp4" || true
+
+# Part 2: picture-in-picture, small -> big -> biggest, subtitles keep fitting the window
+adb shell input keyevent KEYCODE_HOME
+sleep 4
+adb shell "screenrecord --time-limit 60 /sdcard/pip.mp4" &
+REC=$!
+sleep 3
+shot 08-pip-small
+sleep 6
+shot 08b-pip-small
+for size in big biggest; do
+  read -r X Y < <(python3 $H pip-center)
+  tap "$X" "$Y"
+  sleep 2
+  shot "pip-menu-$size"
+  if read -r SX SY < <(python3 $H find "Size:"); then
+    tap "$SX" "$SY"
+  else
+    echo "size button not found"
+  fi
+  sleep 5
+  shot "09-pip-$size"
+  sleep 4
+  shot "09b-pip-$size"
+done
+wait "$REC" 2>/dev/null || true
+adb pull /sdcard/pip.mp4 "$OUT/pip.mp4" || true
+
+adb logcat -d -t 400 > "$OUT/logcat.txt" || true
 ls -la "$OUT"

@@ -32,13 +32,20 @@ jobs:
       - name: Build debug APK
         run: .github/scripts/run-gradle.sh "Debug build" assembleDebug --stacktrace
 
-      - name: Generate sample video
+      - name: Get the sample video and write its subtitles
         run: |
+          set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-          ffmpeg -loglevel error -f lavfi -i "gradients=size=1280x720:rate=30:speed=0.015:seed=7" \
-            -f lavfi -i "sine=frequency=330:sample_rate=44100" -t 45 \
-            -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest .github/showcase/sample.mp4
+          sudo apt-get install -y -qq ffmpeg bc
+          # Big Buck Bunny, (c) Blender Foundation, Creative Commons Attribution (peach.blender.org)
+          curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.mov" \
+            https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_h264.mov \
+            || curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.mov" \
+            https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4
+          ffmpeg -loglevel error -ss 120 -i "$RUNNER_TEMP/bbb.mov" -t 120 \
+            -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
+            -c:a aac -b:a 96k .github/showcase/sample.mp4
+          python3 .github/showcase/make_srt.py .github/showcase/sample.srt
           ls -la .github/showcase
 
       - name: Allow hardware acceleration for the emulator
@@ -58,6 +65,19 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash .github/showcase/run.sh app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Make animated pictures for the README
+        if: always()
+        run: |
+          cd showcase-out
+          for name in full pip; do
+            [ -f "$name.mp4" ] || continue
+            w=640; [ "$name" = pip ] && w=300
+            ffmpeg -loglevel error -y -i "$name.mp4" \
+              -vf "fps=10,scale=$w:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
+              "$name.gif"
+          done
+          ls -la
+
       - name: Upload screenshots and video
         if: always()
         uses: actions/upload-artifact@v4
@@ -74,7 +94,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/media"
           cp showcase-out/*.png "$RUNNER_TEMP/media/"
-          cp showcase-out/demo.mp4 showcase-out/logcat.txt "$RUNNER_TEMP/media/" 2>/dev/null || true
+          cp showcase-out/*.gif showcase-out/*.mp4 showcase-out/logcat.txt "$RUNNER_TEMP/media/" 2>/dev/null || true
           cd "$RUNNER_TEMP/media"
           git init -q -b showcase-media
           git config user.name "github-actions"
