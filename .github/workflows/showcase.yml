@@ -38,11 +38,11 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg bc
           # Big Buck Bunny, (c) Blender Foundation, Creative Commons Attribution (peach.blender.org)
-          curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.mov" \
-            https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_h264.mov \
-            || curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.mov" \
-            https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4
-          ffmpeg -loglevel error -ss 120 -i "$RUNNER_TEMP/bbb.mov" -t 120 \
+          curl -fL --retry 3 -o "$RUNNER_TEMP/bbb.zip" \
+            https://download.blender.org/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4.zip
+          unzip -o -q "$RUNNER_TEMP/bbb.zip" -d "$RUNNER_TEMP/bbb"
+          BBB=$(ls "$RUNNER_TEMP"/bbb/*.mp4 | head -1)
+          ffmpeg -loglevel error -ss 120 -i "$BBB" -t 120 \
             -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p \
             -c:a aac -b:a 96k .github/showcase/sample.mp4
           python3 .github/showcase/make_srt.py .github/showcase/sample.srt
