@@ -36,7 +36,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
-          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=30" \
+          ffmpeg -loglevel error -f lavfi -i "gradients=size=1280x720:rate=30:speed=0.015:seed=7" \
             -f lavfi -i "sine=frequency=330:sample_rate=44100" -t 45 \
             -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest .github/showcase/sample.mp4
           ls -la .github/showcase

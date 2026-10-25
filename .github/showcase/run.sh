@@ -54,8 +54,8 @@ wait_ui 7
 shot 05-player-subtitle-long
 
 # Controls (tap the middle of the screen)
-adb shell input tap 540 800
-wait_ui 2
+adb shell input tap 1170 540
+wait_ui 1
 shot 06-controls
 
 # Picture-in-picture: Home gesture
