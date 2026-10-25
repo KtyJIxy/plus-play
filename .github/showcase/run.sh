@@ -67,14 +67,18 @@ sleep 3
 shot 08-pip-small
 sleep 6
 shot 08b-pip-small
+diag() { { echo "== $1"; adb shell dumpsys activity activities | grep -E "mResumedActivity|PlayerActivity|inPictureInPicture|isInPictureInPictureMode" | head -8; adb logcat -d -b crash | tail -15; adb logcat -d -s PlusPlay:V | tail -5; } >> "$OUT/diag.txt" 2>&1; }
 for size in big biggest; do
   read -r X Y < <(python3 $H pip-center)
   tap "$X" "$Y"
   sleep 2
   shot "pip-menu-$size"
+  diag "menu-$size"
   # Same as pressing the size button in the window (the player listens for that broadcast)
   adb shell am broadcast -a com.plusplay.app.PIP_CONTROL -p $PKG --ei pip_control 4 >/dev/null
-  sleep 5
+  sleep 1
+  diag "after-size-$size"
+  sleep 4
   shot "09-pip-$size"
   sleep 4
   shot "09b-pip-$size"
