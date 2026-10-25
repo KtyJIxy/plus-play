@@ -31,7 +31,7 @@ fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green 
 <p align="center">
   <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/pip.gif" width="220" alt="Switching the picture-in-picture size">
 </p>
-<p align="center">Switching the picture-in-picture size from the window itself</p>
+<p align="center">Switching the picture-in-picture size</p>
 
 | | | |
 |---|---|---|
