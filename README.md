@@ -170,38 +170,29 @@ Top bar, left to right: back, title, fit/crop/stretch, picture-in-picture, rotat
 ## Building
 
 ### GitHub Actions
-Every push builds a debug and a release APK (`.github/workflows/build-apk.yml`). Open the run in
-the **Actions** tab and download the artifact; the run summary lists the file sizes. New forks
-have Actions switched off until you enable them once in the **Actions** tab.
+Every push builds a debug and a release APK and runs the unit tests
+(`.github/workflows/build-apk.yml`). The APKs are attached to the run as downloadable artifacts,
+and the run summary lists their sizes and the test results. Pushing a tag such as `v1.3.1`,
+matching `versionName` in `app/build.gradle`, publishes the signed release APK as a GitHub release,
+with notes from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 
-**Releases:** pushing a tag publishes the signed release APK as a GitHub release. The tag must
-match `versionName` in `app/build.gradle`, and the release notes come from
-`fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`:
+Forks have Actions switched off until they are enabled once in the **Actions** tab.
 
-```bash
-# 1. bump versionName / versionCode in app/build.gradle, add the changelog file, commit, push
-git tag v1.3.2
-git push origin v1.3.2
-```
-
-**Signing:** by default each build is signed with a throwaway key, so a new build cannot be
-installed over the previous one (uninstall first, which also clears saved positions). To make
-every build and release install over the last one, create a key once and add it as repository
-secrets. Run this inside a clone of the repository, and keep the `.jks` file and its passwords
-safe: if you lose them, everyone has to uninstall before updating.
+**Signing:** without configuration each build is signed with a throwaway key, so a new build
+cannot be installed over the previous one. To get a stable signature, create a key and store it
+as the repository secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD`;
+the build then signs every APK with it.
 
 ```bash
-keytool -genkeypair -keystore plusplay-release.jks -alias plusplay \
-        -keyalg RSA -keysize 2048 -validity 10000
-base64 -w0 plusplay-release.jks | gh secret set KEYSTORE_BASE64
-gh secret set KEYSTORE_PASSWORD     # prompts for the password
-gh secret set KEY_ALIAS --body plusplay
-gh secret set KEY_PASSWORD          # prompts; the same password is fine
+keytool -genkeypair -keystore release.jks -alias release -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 release.jks | gh secret set KEYSTORE_BASE64
+gh secret set KEYSTORE_PASSWORD
+gh secret set KEY_ALIAS --body release
+gh secret set KEY_PASSWORD
 ```
 
-To make CI builds install over APKs you compile locally instead, use your local debug key
-(`~/.android/debug.keystore`, alias `androiddebugkey`, password `android`). That password is
-public, so it is fine for testing but not a secure release key.
+Keep the key file and its passwords safe: without them, updates can only be installed after
+uninstalling the app.
 
 ### Locally
 Needs the Android SDK (platform 33, build-tools 34.0.0) and a JDK between 17 and 21: the bundled
