@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity() {
     private fun showExitConfirmation() {
 
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Exit PlusPlay")
+            .setTitle("Exit PlusPlayPiP")
             .setMessage("Are you sure you want to exit the app?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Exit") { _, _ ->
@@ -280,7 +280,7 @@ class MainActivity : AppCompatActivity() {
         folderAdapter.updateItems(items)
         
         // Update title
-        title = if (folderStack.isEmpty()) "PlusPlay" else folder.name
+        title = if (folderStack.isEmpty()) "PlusPlayPiP" else folder.name
     }
 
     private fun checkPermissionAndLoadVideos() {

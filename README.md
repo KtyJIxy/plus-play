@@ -16,6 +16,20 @@ This is a fork of [kmfoysal06/plus-play](https://github.com/kmfoysal06/plus-play
 upstream **v1.0.67**. It adds picture-in-picture, fullscreen in both orientations,
 fit/crop/stretch scaling, subtitle delay and size, automatic resume and a green look.
 
+## Screenshots
+
+Made automatically on an Android emulator with a generated sample video, so no personal files
+are shown (the "Showcase" workflow in the Actions tab remakes them).
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/05-player-subtitle-long.png" width="520" alt="A long subtitle shrunk to fit two lines">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/06-controls.png" width="520" alt="Player controls">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/02-settings.png" width="240" alt="Player settings">
+  <img src="https://raw.githubusercontent.com/KtyJIxy/plus-play/showcase-media/07-pip.png" width="240" alt="Picture-in-picture window">
+</p>
+
 ## Download
 
 Get the latest APK from the [Releases page](https://github.com/KtyJIxy/plus-play/releases),
