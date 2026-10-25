@@ -114,6 +114,13 @@ class PlayerActivity : AppCompatActivity() {
     // remembered between sessions
     private var pipLevel = 0
     private lateinit var resumeChip: TextView
+    // App-wide settings (see SettingsActivity), read when the player opens
+    private var subLinesFull = AppSettings.LINES_FULL.default
+    private var subLinesPip = AppSettings.LINES_PIP.default
+    private var subBoxFullPct = AppSettings.BOX_FULL.default
+    private var subBoxPipPct = AppSettings.BOX_PIP.default
+    private var autoResume = true
+    private var orientationDefault = OrientationPolicy.MATCH
     private var subBoxWidth = 0
     private var subBoxHeight = 0
     private var shownSubtitleText: CharSequence? = null
@@ -167,6 +174,8 @@ class PlayerActivity : AppCompatActivity() {
         private const val MAX_RECENT_VIDEOS = 30
         private const val KEY_ASPECT_MODE = "aspect_mode"
         private const val KEY_SUB_OFFSET = "sub_offset_"
+        private const val KEY_SUB_FILE = "sub_file_"
+        private const val KEY_ORIENTATION = "orientation_"
         private const val RESUME_CHIP_MS = 6000L
         private const val PERIODIC_SAVE_INTERVAL = 10000L
         private const val SUB_STEP_SMALL = 100L
@@ -179,7 +188,6 @@ class PlayerActivity : AppCompatActivity() {
         private const val SUB_SIZE_STEP_BIG = 4
         // Subtitles are laid out in a box over the bottom of the window and shrink to fit it
         private const val SUB_BOX_WIDTH_FRACTION = 0.9f
-        private const val SUB_BOX_HEIGHT_FRACTION = 0.25f
         private const val SUB_BOTTOM_MARGIN_FRACTION = 0.04f
         private const val SUB_AUTOFIT_MIN_DP = 3
         // A window narrower than this fraction of the display counts as small (picture-in-picture)
@@ -232,6 +240,8 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         
+        loadAppSettings()
+        applyOrientation()
         setVideoTitle()
         setupGestureDetector()
         setupVideoView()
@@ -459,6 +469,7 @@ class PlayerActivity : AppCompatActivity() {
             if (subtitles.isNotEmpty()) {
                 subtitleText.visibility = View.VISIBLE
                 currentSubtitlePath = file.absolutePath
+                rememberSubtitleFile(file.absolutePath)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -483,6 +494,13 @@ class PlayerActivity : AppCompatActivity() {
                         subtitles = parseSubtitles(it)
                         if (subtitles.isNotEmpty()) {
                             subtitleText.visibility = View.VISIBLE
+                            // Keep access to the picked file so it can be loaded again next time
+                            try {
+                                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            } catch (e: Exception) {
+                                // not offered by this file provider; loading again may then fail quietly
+                            }
+                            rememberSubtitleFile(uri.toString())
                         }
                     }
                 } catch (e: Exception) {
@@ -656,6 +674,8 @@ class PlayerActivity : AppCompatActivity() {
             seekBar.max = duration
             totalTimeText.text = formatTime(duration)
 
+            applyOrientation(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
+
             // Remember the video's shape so the PiP window matches it
             if (mediaPlayer.videoWidth > 0 && mediaPlayer.videoHeight > 0) {
                 videoAspect = clampAspect(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
@@ -665,9 +685,11 @@ class PlayerActivity : AppCompatActivity() {
 
             // Pick up where the video was left off, without asking; the chip offers a way back
             val resumeAt = ResumePolicy.startPosition(getSavedPosition(), duration)
-            if (resumeAt > 0) {
+            if (resumeAt > 0 && autoResume) {
                 videoView.seekTo(resumeAt)
                 showResumeChip(resumeAt)
+            } else if (resumeAt > 0) {
+                showResumeOffer(resumeAt)
             } else {
                 hideResumeChip()
             }
@@ -712,23 +734,55 @@ class PlayerActivity : AppCompatActivity() {
     private fun loadSubtitles() {
         subtitleOffsetMs = getSavedSubtitleOffset()
         updateSubDelayLabel()
-        videoPath?.let { path ->
-            val videoFile = File(path)
-            val subtitlePath = path.substring(0, path.lastIndexOf('.')) + ".srt"
-            val subtitleFile = File(subtitlePath)
-            
-            if (subtitleFile.exists()) {
-                try {
-                    val content = subtitleFile.readText()
-                    subtitles = parseSubtitles(content)
-                    if (subtitles.isNotEmpty()) {
-                        subtitleText.visibility = View.VISIBLE
-                        currentSubtitlePath = subtitlePath
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+        val path = videoPath ?: return
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+        // 1. The subtitle file chosen for this video last time
+        val saved = prefs.getString(KEY_SUB_FILE + path, null)
+        if (saved != null && loadSavedSubtitle(saved)) return
+
+        // 2. A subtitle file in the same folder named like the video
+        val directory = File(path).parentFile ?: return
+        val srtNames = directory.listFiles { f -> f.isFile && f.extension.equals("srt", ignoreCase = true) }
+            ?.map { it.name } ?: return
+        val match = SubtitleChoice.pick(File(path).name, srtNames) ?: return
+        showLoadedSubtitles(File(directory, match), remember = false)
+    }
+
+    private fun loadSavedSubtitle(saved: String): Boolean {
+        return try {
+            val content = if (saved.startsWith("content://")) {
+                contentResolver.openInputStream(Uri.parse(saved))?.bufferedReader()?.use { it.readText() }
+            } else {
+                File(saved).takeIf { it.exists() }?.readText()
             }
+            val parsed = content?.let { parseSubtitles(it) } ?: return false
+            if (parsed.isEmpty()) return false
+            subtitles = parsed
+            currentSubtitlePath = saved
+            subtitleText.visibility = View.VISIBLE
+            true
+        } catch (e: Exception) {
+            false // file moved or permission gone: fall back to automatic choice
+        }
+    }
+
+    private fun showLoadedSubtitles(file: File, remember: Boolean) {
+        try {
+            val parsed = parseSubtitles(file.readText())
+            if (parsed.isEmpty()) return
+            subtitles = parsed
+            currentSubtitlePath = file.absolutePath
+            subtitleText.visibility = View.VISIBLE
+            if (remember) rememberSubtitleFile(file.absolutePath)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun rememberSubtitleFile(location: String) {
+        videoPath?.let { path ->
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString(KEY_SUB_FILE + path, location).apply()
         }
     }
 
@@ -815,6 +869,8 @@ class PlayerActivity : AppCompatActivity() {
             videoView.stopPlayback()
             handler.removeCallbacks(updateSeekBarRunnable)
             
+            applyOrientation()
+
             // Clear subtitles for new video
             subtitles = emptyList()
             subtitleText.visibility = View.GONE
@@ -829,11 +885,29 @@ class PlayerActivity : AppCompatActivity() {
     }
     
     private fun toggleOrientation() {
-        requestedOrientation = if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        val nowLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val choice = if (nowLandscape) OrientationPolicy.PORTRAIT else OrientationPolicy.LANDSCAPE
+        setScreenOrientation(choice)
+        // Remembered for this video, so it opens the same way next time
+        videoPath?.let { path ->
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putInt(KEY_ORIENTATION + path, choice).apply()
         }
+    }
+
+    private fun setScreenOrientation(choice: Int) {
+        requestedOrientation = when (choice) {
+            OrientationPolicy.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            OrientationPolicy.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            else -> return // leave as it is
+        }
+    }
+
+    // Saved choice for this video first, then the app-wide default (video shape if known)
+    private fun applyOrientation(videoWidth: Int = 0, videoHeight: Int = 0) {
+        if (pipActive) return
+        val path = videoPath ?: return
+        val perFile = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getInt(KEY_ORIENTATION + path, 0)
+        setScreenOrientation(OrientationPolicy.choose(perFile, orientationDefault, videoWidth, videoHeight))
     }
     
     private fun toggleControls() {
@@ -1086,6 +1160,16 @@ class PlayerActivity : AppCompatActivity() {
         updatePipParams()
     }
 
+    private fun loadAppSettings() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        subLinesFull = AppSettings.LINES_FULL.clamp(prefs.getInt(AppSettings.LINES_FULL.key, AppSettings.LINES_FULL.default))
+        subLinesPip = AppSettings.LINES_PIP.clamp(prefs.getInt(AppSettings.LINES_PIP.key, AppSettings.LINES_PIP.default))
+        subBoxFullPct = AppSettings.BOX_FULL.clamp(prefs.getInt(AppSettings.BOX_FULL.key, AppSettings.BOX_FULL.default))
+        subBoxPipPct = AppSettings.BOX_PIP.clamp(prefs.getInt(AppSettings.BOX_PIP.key, AppSettings.BOX_PIP.default))
+        autoResume = prefs.getBoolean(AppSettings.KEY_AUTO_RESUME, true)
+        orientationDefault = prefs.getInt(AppSettings.KEY_ORIENTATION, OrientationPolicy.MATCH)
+    }
+
     private fun pipSizeTitle(): String {
         val next = PIP_SIZE_NAMES[(pipLevel + 1) % PIP_LEVEL_RATIOS.size]
         return "Size: ${PIP_SIZE_NAMES[pipLevel]} (tap for $next)"
@@ -1321,6 +1405,8 @@ class PlayerActivity : AppCompatActivity() {
         val usableWidth = (availableWidth * 0.94f).toInt()
         val usableHeight = (availableHeight * 0.94f).toInt()
 
+        val small = rootWidth in 1 until (realDisplayWidth() * SMALL_WINDOW_FRACTION).toInt()
+        val maxLines = if (small) subLinesPip else subLinesFull
         val paint = TextPaint(subtitleText.paint)
         val sizePx = SubtitleFit.largestFitting(minPx, maxPx) { px ->
             paint.textSize = px.toFloat()
@@ -1330,7 +1416,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             var widest = 0f
             for (line in 0 until layout.lineCount) widest = maxOf(widest, layout.getLineWidth(line))
-            layout.height <= usableHeight && widest <= usableWidth
+            layout.lineCount <= maxLines && layout.height <= usableHeight && widest <= usableWidth
         }
         // dp-based, so the system-wide font size setting does not change it
         if (Math.abs(subtitleText.textSize - sizePx) > 0.5f) {
@@ -1367,7 +1453,7 @@ class PlayerActivity : AppCompatActivity() {
         val params = subtitleText.layoutParams as? RelativeLayout.LayoutParams ?: return
         val small = width < realDisplayWidth() * SMALL_WINDOW_FRACTION
         val boxWidth = (width * SUB_BOX_WIDTH_FRACTION).toInt()
-        val boxHeight = (height * SUB_BOX_HEIGHT_FRACTION).toInt()
+        val boxHeight = (height * (if (small) subBoxPipPct else subBoxFullPct) / 100f).toInt()
         val bottomMargin = if (small) {
             (4 * resources.displayMetrics.density).toInt()
         } else {
@@ -1507,6 +1593,18 @@ class PlayerActivity : AppCompatActivity() {
         handler.postDelayed(hideResumeChipRunnable, RESUME_CHIP_MS)
     }
 
+    // With automatic resume off: start from the beginning, and offer the saved spot
+    private fun showResumeOffer(position: Int) {
+        resumeChip.text = "Resume from ${formatTime(position)}"
+        resumeChip.setOnClickListener {
+            videoView.seekTo(position)
+            hideResumeChip()
+        }
+        resumeChip.visibility = View.VISIBLE
+        handler.removeCallbacks(hideResumeChipRunnable)
+        handler.postDelayed(hideResumeChipRunnable, RESUME_CHIP_MS)
+    }
+
     private fun hideResumeChip() {
         handler.removeCallbacks(hideResumeChipRunnable)
         resumeChip.visibility = View.GONE
@@ -1539,6 +1637,8 @@ class PlayerActivity : AppCompatActivity() {
                 editor.remove(KEY_WAS_PLAYING + oldestVideo)
                 editor.remove(KEY_TIMESTAMP + oldestVideo)
                 editor.remove(KEY_SUB_OFFSET + oldestVideo)
+                editor.remove(KEY_SUB_FILE + oldestVideo)
+                editor.remove(KEY_ORIENTATION + oldestVideo)
             }
             
             // Save updated list

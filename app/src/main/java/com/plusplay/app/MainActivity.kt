@@ -30,6 +30,7 @@ import android.media.MediaMetadataRetriever
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        private const val RECENT_PATH = "recent://"
         private val SUPPORTED_VIDEO_EXTENSIONS = setOf(".mp4", ".mkv", ".avi", ".mov")
         private const val PERMISSION_REQUEST_CODE = 100
     }
@@ -44,6 +45,30 @@ class MainActivity : AppCompatActivity() {
     private val allVideos = mutableListOf<VideoFile>()
     private val rootFolder = VideoFolder("Root", "/", mutableListOf(), mutableListOf())
     private val folderStack = mutableListOf<VideoFolder>()
+    // Virtual folder with the videos played last, newest first
+    private val recentFolder = VideoFolder("Recent", RECENT_PATH, mutableListOf(), mutableListOf())
+
+    private fun playerPrefs() = getSharedPreferences(AppSettings.PREFS_NAME, MODE_PRIVATE)
+
+    private fun rebuildRecent() {
+        val saved = playerPrefs().getString("recent_videos", "") ?: ""
+        val byPath = allVideos.associateBy { it.path }
+        recentFolder.videos.clear()
+        saved.split("|").filter { it.isNotEmpty() }.forEach { path ->
+            byPath[path]?.let { recentFolder.videos.add(it) }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Coming back from the player: the recent list has changed
+        if (allVideos.isEmpty()) return
+        rebuildRecent()
+        when {
+            folderStack.lastOrNull() === recentFolder -> displayFolder(recentFolder)
+            folderStack.isEmpty() -> displayFolder(rootFolder)
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,6 +194,11 @@ class MainActivity : AppCompatActivity() {
             R.id.exitAppRow
         )
 
+        view.findViewById<View>(R.id.playerSettingsRow).setOnClickListener {
+            popupWindow.dismiss()
+            startActivity(android.content.Intent(this, SettingsActivity::class.java))
+        }
+
         exitRow.setOnClickListener {
 
             popupWindow.dismiss()
@@ -231,13 +261,19 @@ class MainActivity : AppCompatActivity() {
             items.add(ListItem.BackItem(".."))
         }
         
+        // Recent videos come first on the top level
+        if (folderStack.isEmpty() && recentFolder.videos.isNotEmpty()) {
+            items.add(ListItem.FolderItem(recentFolder))
+        }
+
         // Add subfolders first
         folder.subFolders.sortedBy { it.name.lowercase() }.forEach {
             items.add(ListItem.FolderItem(it))
         }
         
         // Add videos
-        folder.videos.sortedBy { it.name.lowercase() }.forEach {
+        val videos = if (folder === recentFolder) folder.videos.toList() else folder.videos.sortedBy { it.name.lowercase() }
+        videos.forEach {
             items.add(ListItem.VideoItem(it))
         }
         
@@ -328,6 +364,7 @@ class MainActivity : AppCompatActivity() {
 
             scanVideoFiles()
             organizeFolders()
+            rebuildRecent()
 
             runOnUiThread {
                 progressBar.visibility = View.GONE
@@ -341,6 +378,12 @@ class MainActivity : AppCompatActivity() {
 
                     if (currentFolderPath != null) {
                         restoreFolder(currentFolderPath)
+                    } else if (
+                        playerPrefs().getBoolean(AppSettings.KEY_START_RECENT, true) &&
+                        recentFolder.videos.isNotEmpty()
+                    ) {
+                        folderStack.add(recentFolder)
+                        displayFolder(recentFolder)
                     } else {
                         displayFolder(rootFolder)
                     }
@@ -378,6 +421,13 @@ class MainActivity : AppCompatActivity() {
         if (path == "/") {
             folderStack.clear()
             displayFolder(rootFolder)
+            return
+        }
+
+        if (path == RECENT_PATH) {
+            folderStack.clear()
+            folderStack.add(recentFolder)
+            displayFolder(recentFolder)
             return
         }
 
